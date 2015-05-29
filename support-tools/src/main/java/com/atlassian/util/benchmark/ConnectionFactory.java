@@ -38,18 +38,9 @@ public class ConnectionFactory
         }
     }
 
-    public String getPassword()
-    {
-        return password;
-    }
-
     public String getURL()
     {
         return url;
     }
 
-    public String getUserName()
-    {
-        return userName;
-    }
 }

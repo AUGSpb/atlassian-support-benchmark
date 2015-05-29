@@ -7,18 +7,12 @@ import java.util.List;
 
 public class Benchmark
 {
-    static final int DEFAULT_RUNS = 1000;
 	static final boolean PRINT_DETAILS = false;
 
     private final String name;
     private final List<TimedTestRunner> runners;
     private final int runs;
     private final PrintWriter writer;
-
-    Benchmark(String name, List<TimedTestRunner> runners)
-    {
-        this(name, runners, DEFAULT_RUNS);
-    }
 
     Benchmark(String name, List<TimedTestRunner> runners, int runs)
     {

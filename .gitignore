@@ -1,1 +1,5 @@
 .idea
+*.iml
+.DS_Store
+support-tools/target/*
+*.class
