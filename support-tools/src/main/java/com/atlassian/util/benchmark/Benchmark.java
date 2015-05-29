@@ -3,6 +3,7 @@ package com.atlassian.util.benchmark;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 public class Benchmark
@@ -22,40 +23,60 @@ public class Benchmark
     Benchmark(String name, List<TimedTestRunner> runners, int runs, PrintWriter writer)
     {
         this.name = name;
-        this.runners = Collections.unmodifiableList(new ArrayList<TimedTestRunner>(runners));
+        this.runners = Collections.unmodifiableList(new ArrayList<>(runners));
         this.runs = runs;
         this.writer = writer;
     }
 
-    public void run()
-    {
-        writer.print("Benchmark: ");
-        writer.println(name);
+    private void printDetails(List<List<Timer>> runResults) {
+        // write header
+        writer.print("#");
+        for (TimedTestRunner runner : runners)
+        {
+            writer.print("\t");
+            writer.print(runner.getName());
+        }
         writer.println();
-
-        if (PRINT_DETAILS) {
-			// write header
-        	writer.print("#");
-        	for (TimedTestRunner runner : runners)
-        	{
-            	writer.print("\t");
-            	writer.print(runner.getName());
-        	}
-        	writer.println();
-		}
 
         for (int i = 0; i < runs; i++)
         {
-            if (PRINT_DETAILS) writer.print(i);
+            writer.print(i);
+            for (Timer timer : runResults.get(i))
+            {
+                writer.print("\t");
+                writer.print(timer);
+            }
+            writer.println();
+        }
+    }
+
+    /**
+     *
+     * @return empty list if PRINT_DETAILS is false, a matrix of Timer otherwise
+     */
+    private List<List<Timer>> runTests ()
+    {
+        List<List<Timer>> runResults = new ArrayList<>();
+        for (int i = 0; i < runs; i++)
+        {
             for (TimedTestRunner runner : runners)
             {
+                Timer result = runner.run();
                 if (PRINT_DETAILS) {
-					writer.print("\t");
-                	writer.print(runner.run());
-				}
-				else runner.run();
+                    runResults.get(i).add(result);
+                }
             }
-            if (PRINT_DETAILS) writer.println();
+        }
+        return runResults;
+    }
+    
+    public void run()
+    {
+        List<List<Timer>> runResults = runTests();
+        
+        writer.print("Benchmark: " + name + "\n");
+        if (PRINT_DETAILS) {
+			printDetails(runResults);
         }
         
         writer.println();
