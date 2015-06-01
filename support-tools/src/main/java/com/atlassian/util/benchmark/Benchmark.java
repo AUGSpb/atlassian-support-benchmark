@@ -13,7 +13,7 @@ import de.vandermeer.skb.asciitable.TableOptions;
 public class Benchmark
 {
 	static final boolean PRINT_DETAILS = false;
-    static final int MAX_TABLE_WIDTH = 100;
+    static final int MAX_TABLE_WIDTH = 80;
 
     private final String name;
     private final List<TimedTestRunner> runners;
