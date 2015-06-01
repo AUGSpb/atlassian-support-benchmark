@@ -1,6 +1,7 @@
 package com.atlassian.util.benchmark;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.List;
@@ -38,12 +39,11 @@ public class RandomAccessFileTest implements Callable<Object>
         return null;
     }
 
-    private List<TimedTestRunner> getTests()
+    private List<TimedTestRunner> getTests() throws IOException
     {
-        final File tmpDir = new File(System.getProperty("java.io.tmpdir"));
-        final File file = new File(tmpDir, "test.txt");
+        final File file = File.createTempFile(System.getProperty("java.io.tmpdir"), "test.txt");
 
-        final AtomicReference<RandomAccessFile> fileRef = new AtomicReference<RandomAccessFile>();
+        final AtomicReference<RandomAccessFile> fileRef = new AtomicReference<>();
 
         final TimedTestRunner openFile = new TimedTestRunner("open", new Callable<Object>()
         {
