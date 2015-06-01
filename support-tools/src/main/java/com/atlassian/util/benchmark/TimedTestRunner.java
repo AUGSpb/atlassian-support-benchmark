@@ -42,4 +42,9 @@ public class TimedTestRunner
     {
         return timerList.toString();
     }
+
+    public TimerList getTimerList()
+    {
+        return timerList;
+    }
 }

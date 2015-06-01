@@ -1,14 +1,19 @@
 package com.atlassian.util.benchmark;
 
+import de.vandermeer.skb.asciitable.AsciiTable;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
+
+import de.vandermeer.skb.asciitable.StandardTableThemes;
+import de.vandermeer.skb.asciitable.TableOptions;
 
 public class Benchmark
 {
 	static final boolean PRINT_DETAILS = false;
+    static final int MAX_TABLE_WIDTH = 100;
 
     private final String name;
     private final List<TimedTestRunner> runners;
@@ -69,7 +74,7 @@ public class Benchmark
         }
         return runResults;
     }
-    
+
     public void run()
     {
         List<List<Timer>> runResults = runTests();
@@ -78,19 +83,21 @@ public class Benchmark
         if (PRINT_DETAILS) {
 			printDetails(runResults);
         }
-        
+
         writer.println();
         writer.println("TOTALS");
-        writer.println("----\t----\t----\t----\t----");
-        writer.println("stat\tavg\tmedian\tmin\tmax");
-        writer.println("----\t----\t----\t----\t----");
+        AsciiTable table = AsciiTable.newTable(5, MAX_TABLE_WIDTH);
+        table.addRow("stat", "avg", "median", "tmin", "tmax");
         for (TimedTestRunner runner : runners)
         {
-            writer.println(runner);
+            TimerList timer = runner.getTimerList();
+            table.addRow(runner.getName(), timer.average(), timer.median(), timer.min(), timer.max());
         }
-        writer.println("----\t----\t----\t----\t----");
+        TableOptions options = new TableOptions();
+        options.setRenderTheme(StandardTableThemes.LATEX_LIGHT);
+        writer.print(table.render(options));
+
         writer.println("All times are in nanoseconds.");
-        
         writer.flush();
     }
 }
