@@ -124,8 +124,11 @@ public class JIRASQLPerformance
         {
             public Object call() throws Exception
             {
-                selectWorkFlow.setLong(1, Long.valueOf(issue.get("WORKFLOW_ID")));
-                wfResultSet.set(selectWorkFlow.executeQuery());
+                final String workflowID = issue.get("WORKFLOW_ID");
+                if (workflowID != null) {
+                    selectWorkFlow.setLong(1, Long.valueOf(workflowID));
+                    wfResultSet.set(selectWorkFlow.executeQuery());
+                }
                 return null;
             }
         }));
@@ -136,6 +139,10 @@ public class JIRASQLPerformance
             {
                 workflow.clear();
                 ResultSet rs = wfResultSet.get();
+                if (rs == null) {
+                    System.out.println("No workflows found");
+                    return null;
+                }
                 rs.next();
                 final int columnCount = rs.getMetaData().getColumnCount();
                 for (int i = 1; i <= columnCount; i++)
