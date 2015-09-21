@@ -1,14 +1,13 @@
 package com.atlassian.util.benchmark;
 
-import de.vandermeer.skb.asciitable.AsciiTable;
+import de.vandermeer.asciitable.v1.V1_AsciiTable;
+import de.vandermeer.asciitable.v1.V1_StandardTableThemes;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import de.vandermeer.skb.asciitable.StandardTableThemes;
-import de.vandermeer.skb.asciitable.TableOptions;
 
 public class Benchmark
 {
@@ -86,16 +85,17 @@ public class Benchmark
 
         writer.println();
         writer.println("TOTALS");
-        AsciiTable table = AsciiTable.newTable(5, MAX_TABLE_WIDTH);
+        V1_AsciiTable table = V1_AsciiTable.newTable(5, MAX_TABLE_WIDTH);
+        table.setTheme(V1_StandardTableThemes.LATEX_LIGHT);
         table.addRow("stat", "avg", "median", "tmin", "tmax");
+        
         for (TimedTestRunner runner : runners)
         {
             TimerList timer = runner.getTimerList();
             table.addRow(runner.getName(), timer.average(), timer.median(), timer.min(), timer.max());
         }
-        TableOptions options = new TableOptions();
-        options.setRenderTheme(StandardTableThemes.LATEX_LIGHT);
-        writer.print(table.render(options));
+
+        writer.print(table.render());
 
         writer.println("All times are in nanoseconds.");
         writer.flush();
