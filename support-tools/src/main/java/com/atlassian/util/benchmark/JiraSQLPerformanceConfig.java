@@ -3,57 +3,43 @@ package com.atlassian.util.benchmark;
 import nu.xom.Builder;
 import nu.xom.Document;
 import nu.xom.Element;
+import nu.xom.Elements;
 import nu.xom.ParsingException;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
- * Created by jsimon on 3/06/2015.
+ * Discovers DB configuration and performs benchmarks on it
  */
 public class JiraSQLPerformanceConfig
 {
     private static final int NUMBER_OF_RUNS = 1000;
-    private String username;
-    private String password;
-    private String url;
-    private String driver;
-    private String dbType;
+    private static final Class[] parameters = new Class[] {URL.class};
 
-    private static final Map<String, String> DRIVERS = new HashMap<String, String>(){{
-        //TODO add mysql
-        put("hsql","hsqldb-1.8.0.5.jar");
-        put("h2", null);
-        put("h2", null);
-        put("h2", null);
-        put("h2", null);
-        put("h2", null);
-        put("postgres72","postgresql-9.0-801.jdbc4.jar");
-    }};
+    private final String dbType;
+    private final String username;
+    private final String password;
+    private final String url;
+    private final String driverClass;
 
-
-    
-    SQL_SERVER("SQL Server", "mssql", "Database", new SqlServerUrlParser(), ImmutableList.of("net.sourceforge.jtds.jdbc.Driver",
-        // SQL Server with Microsoft JDBC drivers. Supported for manual setting but not used by default.
-        "com.microsoft.jdbc.sqlserver.SQLServerDriver")),
-    MY_SQL("MySQL", "mysql", "Database", new MySqlUrlParser(), ImmutableList.of("com.mysql.jdbc.Driver")),
-    ORACLE("Oracle", "oracle10g", "SID", new OracleUrlParser(), ImmutableList.of("oracle.jdbc.OracleDriver")),
-    POSTGRES("PostgreSQL", "postgres72", "Database", new PostgresUrlParser(), ImmutableList.of("org.postgresql.Driver")),
-    UKNOWN("Uknown", "unknown", "unknown", null, ImmutableList.<String>of());
-    
-    
-    public static void main(String[] args) throws Exception
-    {
-        try
-        {
+    public static void main(String[] args) throws Exception {
+        try {
             String jiraHome = args[0];
             String jiraInstallDir = args[1];
-            
             JiraSQLPerformanceConfig config = parseDBConfig(jiraHome);
             
+            loadJar(Paths.get(jiraInstallDir, "lib"), config.dbType);
+            
             final ConnectionFactory connectionFactory = new ConnectionFactory(config.username,
-                    config.password, config.url, config.driver);
+                    config.password, config.url, config.driverClass);
+            
             new JIRASQLPerformance(connectionFactory, NUMBER_OF_RUNS).call();
 
         } catch (IndexOutOfBoundsException e) {
@@ -61,35 +47,82 @@ public class JiraSQLPerformanceConfig
         }
     }
     
-    public JiraSQLPerformanceConfig(String username, String password, String url, String dbType, String driver) {
-        this.dbType = dbType;
+    public JiraSQLPerformanceConfig(String username, String password, String url, String dbType, String driverClass) {
         this.username = username;
         this.password = password;
         this.url = url;
-        this.driver = driver;
+        this.dbType = dbType;
+        this.driverClass = driverClass;
     }
     
-    private static JiraSQLPerformanceConfig parseDBConfig(String jiraHome)
-    {
+    private static JiraSQLPerformanceConfig parseDBConfig(String jiraHome) {
         try {
             Builder parser = new Builder();
             Document doc = parser.build(jiraHome + "/dbconfig.xml");
+            String username = null;
+            String password = null;
+
             Element root = doc.getRootElement();
-            String dbType = root.getAttributeValue("database-type");
+            String databaseType = root.getFirstChildElement("database-type").getChild(0).getValue();
             Element jdbc = root.getFirstChildElement("jdbc-datasource");
-            String username = jdbc.getAttributeValue("username");
-            String password = jdbc.getAttributeValue("password");
-            String driver = jdbc.getAttributeValue("driver-class");
-            String url = jdbc.getAttributeValue("url");
-            return new JiraSQLPerformanceConfig(username, password, url, dbType, driver);
-        }
-        catch (ParsingException ex) {
-            System.err.println("Cafe con Leche is malformed today. How embarrassing!");
-        }
-        catch (IOException ex) {
-            System.err.println("Could not connect to Cafe con Leche. The site may be down.");
+            
+            Elements usernameChildren = jdbc.getFirstChildElement("username").getChildElements();
+            if (usernameChildren.size() > 0) {
+                username = usernameChildren.get(0).getValue();
+            }
+
+            Elements passwordChildren = jdbc.getFirstChildElement("password").getChildElements();
+            if (passwordChildren.size() > 0) {
+                password = usernameChildren.get(0).getValue();
+            }
+
+            String driverClass = jdbc.getFirstChildElement("driver-class").getChild(0).getValue();
+            String url = jdbc.getFirstChildElement("url").getChild(0).getValue();
+            return new JiraSQLPerformanceConfig(username, password, url, databaseType, driverClass);
+        } catch (ParsingException | IOException ex) {
+            throw new Error("There was an error retrieving your database configuration", ex);
         }
     }
-    
-    
+
+    /**
+     * Selects the jar that matches the DB
+     * @param libPath
+     * @param dbType
+     * @return
+     * @throws IOException
+     */
+    private static Path findJarForDB(Path libPath, String dbType) throws IOException {
+        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(libPath)) {
+            for (Path path : directoryStream) {
+                if (path.toString().contains(dbType)) {
+                    return path.toAbsolutePath();
+                }
+            }
+            throw new RuntimeException("Could not find a driver for " + dbType + "in " + libPath);
+        } catch (IOException ex) {
+            throw new IOException("There was an error finding our DB driverClass", ex);
+        }
+    }
+
+    /**
+     * Loads database drives into the system class loader 
+     * @param libPath Directory to where driver jars are located
+     * @param dbType Type of database
+     * @throws IOException
+     */
+    private static void loadJar(Path libPath, String dbType) throws IOException {
+        Path jarPath = findJarForDB(libPath, dbType);
+
+        URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
+        Class sysclass = URLClassLoader.class;
+
+        try {
+            Method method = sysclass.getDeclaredMethod("addURL", parameters);
+            method.setAccessible(true);
+            method.invoke(sysloader, new Object[] {jarPath.toUri().toURL()});
+        } catch (Throwable t) {
+            t.printStackTrace();
+            throw new IOException("Error, could not add URL to system classloader");
+        }
+    }
 }

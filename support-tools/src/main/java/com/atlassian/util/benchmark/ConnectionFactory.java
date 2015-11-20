@@ -10,14 +10,10 @@ public class ConnectionFactory
     private final String password;
     private final String url;
 
-    ConnectionFactory(String userName, String password, String url, String driver)
-    {
-        try
-        {
-            Class.forName(driver);
-        }
-        catch (ClassNotFoundException e)
-        {
+    ConnectionFactory(String userName, String password, String url, String driverClass) {
+        try {
+            Class.forName(driverClass);
+        } catch (ClassNotFoundException e) {
             throw new IllegalArgumentException(e);
         }
 
@@ -26,14 +22,10 @@ public class ConnectionFactory
         this.url = url;
     }
 
-    Connection getConnection()
-    {
-        try
-        {
+    Connection getConnection() {
+        try {
             return DriverManager.getConnection(url, userName, password);
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
@@ -42,5 +34,4 @@ public class ConnectionFactory
     {
         return url;
     }
-
 }
