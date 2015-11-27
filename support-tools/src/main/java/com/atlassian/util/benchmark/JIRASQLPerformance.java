@@ -1,44 +1,57 @@
 package com.atlassian.util.benchmark;
 
+import com.atlassian.util.JiraDatabaseConfig;
+
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class JIRASQLPerformance
 {
-    public static void main(String[] args) throws Exception
-    {
-        final ConnectionFactory connectionFactory;
-        final int noOfRuns;
-        try
-        {
-            connectionFactory = new ConnectionFactory(args[0], args[1], args[2], args[3]);
-            // connectionFactory = new ConnectionFactory("jirauser", "jirauser",
-            // "jdbc:jtds:sqlserver://192.168.0.89:1433/jed", "net.sourceforge.jtds.jdbc.Driver");
-            noOfRuns = (args.length == 5) ? Integer.valueOf(args[4]) : 1000;
-        }
-        catch (RuntimeException e)
-        {
-            System.out.println("Usage: java " + JIRASQLPerformance.class.getName() + " user password url driverClass [noOfRuns]");
+    private static final int NUMBER_OF_RUNS = 1000;
+
+    public static void main(String[] args) throws Exception {
+        ConnectionFactory connectionFactory = null;
+        int noOfRuns = NUMBER_OF_RUNS;
+
+        try {
+            if (args.length < 4) {
+                String jiraHome = args[0];
+                String jiraInstallDir = args[1];
+                connectionFactory = autoDiscoverConfig(jiraHome, jiraInstallDir);
+                noOfRuns = (args.length == 3) ? Integer.valueOf(args[2]) : NUMBER_OF_RUNS;
+            } else {
+                connectionFactory = new ConnectionFactory(args[0], args[1], args[2], args[3]);
+                // connectionFactory = new ConnectionFactory("jirauser", "jirauser",
+                // "jdbc:jtds:sqlserver://192.168.0.89:1433/jed", "net.sourceforge.jtds.jdbc.Driver");
+                noOfRuns = (args.length == 5) ? Integer.valueOf(args[4]) : NUMBER_OF_RUNS;
+            }
+        } catch (IOException e) {
+            System.out.println("There was an error reading your JIRA config from " + args[0]);
             throw e;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println("Usage: java " + JIRASQLPerformance.class.getName() + " user password url driverClass [noOfRuns]");
         }
         new JIRASQLPerformance(connectionFactory, noOfRuns).call();
+    }
+    
+    private static ConnectionFactory autoDiscoverConfig(String jiraHome, String jiraInstallDir) throws IOException {
+        JiraDatabaseConfig config = JiraDatabaseConfig.parseDBConfig(jiraHome);
+        config.loadJar(Paths.get(jiraInstallDir, "lib"));
+        final ConnectionFactory connectionFactory = new ConnectionFactory(config);
+        
+        return connectionFactory;
     }
 
     private final ConnectionFactory connectionFactory;
     private final int issueCount;
 
-    public JIRASQLPerformance(ConnectionFactory connectionFactory, int issueCount)
-    {
+    public JIRASQLPerformance(ConnectionFactory connectionFactory, int issueCount) {
         this.connectionFactory = connectionFactory;
         this.issueCount = issueCount;
     }
@@ -52,7 +65,7 @@ public class JIRASQLPerformance
 
     private List<TimedTestRunner> getTests() throws Exception
     {
-        final List<Long> ids = new ArrayList<Long>(issueCount);
+        final List<Long> ids = new ArrayList<>(issueCount);
         final Connection conn = connectionFactory.getConnection();
         final Random rnd = new Random();
         {
@@ -60,8 +73,7 @@ public class JIRASQLPerformance
             ResultSet rs = countIssues.executeQuery();
             rs.next();
             int noOfIssues = rs.getInt(1);
-            if (noOfIssues < issueCount)
-            {
+            if (noOfIssues < issueCount) {
                 throw new IllegalArgumentException("Cannot iterate over " + issueCount + " issues as there are only " + noOfIssues
                     + " issues in the database");
             }
