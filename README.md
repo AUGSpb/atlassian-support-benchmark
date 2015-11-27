@@ -7,7 +7,7 @@ Compile
 	
 It will generate two jars:
 
-* support-tools-1.0-SNAPSHOT.jar Contains just the project class files
+* support-tools-2.0-SNAPSHOT.jar Contains just the project class files
 * support-tools.jar Contains also the dependencies
 
 
@@ -24,6 +24,12 @@ To run the SQL tests:
     java -cp support-tools.jar:com.atlassian.util.benchmark.JIRASQLPerformance:/path/to/your/jdbc-driver.jar \
 	    com.atlassian.util.benchmark.JIRASQLPerformance
     user passwrod driverclass jdbc-url driver-classname [numberOfRuns]
+
+or
+
+    java -cp support-tools.jar:com.atlassian.util.benchmark.JIRASQLPerformance \
+	    com.atlassian.util.benchmark.JIRASQLPerformance
+    jirahome jirainstallationdir [numberOfRuns]
 
 
 Example for postgres:
