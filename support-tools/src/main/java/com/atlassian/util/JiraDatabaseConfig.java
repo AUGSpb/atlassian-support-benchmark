@@ -1,5 +1,7 @@
-package com.atlassian.util.benchmark;
+package com.atlassian.util;
 
+import com.atlassian.util.benchmark.ConnectionFactory;
+import com.atlassian.util.benchmark.JIRASQLPerformance;
 import nu.xom.Builder;
 import nu.xom.Document;
 import nu.xom.Element;
@@ -18,7 +20,7 @@ import java.nio.file.Paths;
 /**
  * Discovers DB configuration and performs benchmarks on it
  */
-public class JiraSQLPerformanceConfig
+public class JiraDatabaseConfig
 {
     private static final int NUMBER_OF_RUNS = 1000;
     private static final Class[] parameters = new Class[] {URL.class};
@@ -33,7 +35,7 @@ public class JiraSQLPerformanceConfig
         try {
             String jiraHome = args[0];
             String jiraInstallDir = args[1];
-            JiraSQLPerformanceConfig config = parseDBConfig(jiraHome);
+            JiraDatabaseConfig config = parseDBConfig(jiraHome);
             
             loadJar(Paths.get(jiraInstallDir, "lib"), config.dbType);
             
@@ -47,7 +49,7 @@ public class JiraSQLPerformanceConfig
         }
     }
     
-    public JiraSQLPerformanceConfig(String username, String password, String url, String dbType, String driverClass) {
+    public JiraDatabaseConfig(String username, String password, String url, String dbType, String driverClass) {
         this.username = username;
         this.password = password;
         this.url = url;
@@ -55,7 +57,7 @@ public class JiraSQLPerformanceConfig
         this.driverClass = driverClass;
     }
     
-    private static JiraSQLPerformanceConfig parseDBConfig(String jiraHome) {
+    private static JiraDatabaseConfig parseDBConfig(String jiraHome) {
         try {
             Builder parser = new Builder();
             Document doc = parser.build(jiraHome + "/dbconfig.xml");
@@ -78,7 +80,7 @@ public class JiraSQLPerformanceConfig
 
             String driverClass = jdbc.getFirstChildElement("driver-class").getChild(0).getValue();
             String url = jdbc.getFirstChildElement("url").getChild(0).getValue();
-            return new JiraSQLPerformanceConfig(username, password, url, databaseType, driverClass);
+            return new JiraDatabaseConfig(username, password, url, databaseType, driverClass);
         } catch (ParsingException | IOException ex) {
             throw new Error("There was an error retrieving your database configuration", ex);
         }

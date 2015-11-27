@@ -10,7 +10,7 @@ public class ConnectionFactory
     private final String password;
     private final String url;
 
-    ConnectionFactory(String userName, String password, String url, String driverClass) {
+    public ConnectionFactory(String userName, String password, String url, String driverClass) {
         try {
             Class.forName(driverClass);
         } catch (ClassNotFoundException e) {
@@ -22,7 +22,7 @@ public class ConnectionFactory
         this.url = url;
     }
 
-    Connection getConnection() {
+    public Connection getConnection() {
         try {
             return DriverManager.getConnection(url, userName, password);
         } catch (SQLException e) {

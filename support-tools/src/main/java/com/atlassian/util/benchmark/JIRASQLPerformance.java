@@ -37,7 +37,7 @@ public class JIRASQLPerformance
     private final ConnectionFactory connectionFactory;
     private final int issueCount;
 
-    JIRASQLPerformance(ConnectionFactory connectionFactory, int issueCount)
+    public JIRASQLPerformance(ConnectionFactory connectionFactory, int issueCount)
     {
         this.connectionFactory = connectionFactory;
         this.issueCount = issueCount;
