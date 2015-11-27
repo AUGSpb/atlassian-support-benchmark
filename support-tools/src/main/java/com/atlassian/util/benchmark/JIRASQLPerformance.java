@@ -3,7 +3,6 @@ package com.atlassian.util.benchmark;
 import com.atlassian.util.JiraDatabaseConfig;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,8 +10,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class JIRASQLPerformance
-{
+public class JIRASQLPerformance {
     private static final int NUMBER_OF_RUNS = 1000;
 
     public static void main(String[] args) throws Exception {
@@ -23,7 +21,8 @@ public class JIRASQLPerformance
             if (args.length < 4) {
                 String jiraHome = args[0];
                 String jiraInstallDir = args[1];
-                connectionFactory = autoDiscoverConfig(jiraHome, jiraInstallDir);
+                JiraDatabaseConfig config = JiraDatabaseConfig.autoDiscoverConfig(jiraHome, jiraInstallDir);
+                connectionFactory = new ConnectionFactory(config);
                 noOfRuns = (args.length == 3) ? Integer.valueOf(args[2]) : NUMBER_OF_RUNS;
             } else {
                 connectionFactory = new ConnectionFactory(args[0], args[1], args[2], args[3]);
@@ -35,19 +34,13 @@ public class JIRASQLPerformance
             System.out.println("There was an error reading your JIRA config from " + args[0]);
             throw e;
         } catch (ArrayIndexOutOfBoundsException e) {
-            System.out.println("Usage: java " + JIRASQLPerformance.class.getName() + " user password url driverClass [noOfRuns]");
+            System.out.println("Usage: "
+                    + "\njava " + JIRASQLPerformance.class.getName() + " user password url driverClass [noOfRuns]"
+                    + "\njava " + JIRASQLPerformance.class.getName() + " jirahome jirainstalldir [noOfRuns]");
         }
         new JIRASQLPerformance(connectionFactory, noOfRuns).call();
     }
     
-    private static ConnectionFactory autoDiscoverConfig(String jiraHome, String jiraInstallDir) throws IOException {
-        JiraDatabaseConfig config = JiraDatabaseConfig.parseDBConfig(jiraHome);
-        config.loadJar(Paths.get(jiraInstallDir, "lib"));
-        final ConnectionFactory connectionFactory = new ConnectionFactory(config);
-        
-        return connectionFactory;
-    }
-
     private final ConnectionFactory connectionFactory;
     private final int issueCount;
 
@@ -98,14 +91,14 @@ public class JIRASQLPerformance
         }
 
         final PreparedStatement selectIssue = conn.prepareStatement("SELECT * FROM jiraIssue WHERE id = ?");
-        final AtomicReference<ResultSet> issueResultSet = new AtomicReference<ResultSet>();
-        final Map<String, String> issue = new HashMap<String, String>();
+        final AtomicReference<ResultSet> issueResultSet = new AtomicReference<>();
+        final Map<String, String> issue = new HashMap<>();
 
         final PreparedStatement selectWorkFlow = conn.prepareStatement("SELECT * FROM os_currentStep WHERE entry_id = ?");
-        final AtomicReference<ResultSet> wfResultSet = new AtomicReference<ResultSet>();
-        final Map<String, String> workflow = new HashMap<String, String>();
+        final AtomicReference<ResultSet> wfResultSet = new AtomicReference<>();
+        final Map<String, String> workflow = new HashMap<>();
 
-        final List<TimedTestRunner> result = new ArrayList<TimedTestRunner>();
+        final List<TimedTestRunner> result = new ArrayList<>();
         result.add(new TimedTestRunner("retrieveIssue", new Callable<Object>()
         {
             public Object call() throws Exception

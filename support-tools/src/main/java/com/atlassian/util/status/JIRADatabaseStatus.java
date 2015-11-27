@@ -1,9 +1,11 @@
 package com.atlassian.util.status;
 
+import com.atlassian.util.JiraDatabaseConfig;
 import com.atlassian.util.benchmark.ConnectionFactory;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import thirdparty.DBTablePrinter;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -16,6 +18,27 @@ public class JIRADatabaseStatus {
     public JIRADatabaseStatus(ConnectionFactory connectionFactory, String dbType) {
         this.connectionFactory = connectionFactory;
         this.dbType = dbType;
+    }
+
+    public static void main(String[] args) throws Exception {
+        ConnectionFactory connectionFactory = null;
+        JiraDatabaseConfig config = null;
+        
+        try {
+            String jiraHome = args[0];
+            String jiraInstallDir = args[1];
+            config = JiraDatabaseConfig.autoDiscoverConfig(jiraHome, jiraInstallDir);
+            connectionFactory = new ConnectionFactory(config);
+
+        } catch (IOException e) {
+            System.out.println("There was an error reading your JIRA config from " + args[0]);
+            throw e;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println("Usage: java " + JIRADatabaseStatus.class.getName() + " jirahome jirainstalldir");
+        }
+
+        JIRADatabaseStatus dbStatus = new JIRADatabaseStatus(connectionFactory, config.getDBType());
+        dbStatus.analyzeConnection();
     }
     
     public void analyzeConnection () throws SQLException {
@@ -53,10 +76,10 @@ public class JIRADatabaseStatus {
         @Override
         public void run() throws SQLException {
             System.out.println("You will probably need to enable these parameters to get data:"
-                    + "The parameter track_activities enables monitoring of the current command being executed by any server process.\n"
-                    + "The parameter track_counts controls whether statistics are collected about table and index accesses.\n"
-                    + "The parameter track_functions enables tracking of usage of user-defined functions.\n"
-                    + "The parameter track_io_timing enables monitoring of block read and write times.");
+                    + "\n\ttrack_activities enables monitoring of the current command being executed by any server process."
+                    + "\n\ttrack_counts controls whether statistics are collected about table and index accesses."
+                    + "\n\ttrack_functions enables tracking of usage of user-defined functions."
+                    + "\n\ttrack_io_timing enables monitoring of block read and write times.");
 
             String[] tables = {
                     "pg_stat_activity",            // One row per server process, showing information related to the current activity of that process, such as state and current query. See pg_stat_activity for details.

@@ -53,7 +53,7 @@ public class DBTablePrinter {
     /**
      * Default maximum number of rows to query and print.
      */
-    private static final int DEFAULT_MAX_ROWS = 10;
+    private static final int DEFAULT_MAX_ROWS = 1000;
 
     /**
      * Default maximum width for text columns
@@ -359,6 +359,7 @@ public class DBTablePrinter {
             stmt = conn.createStatement();
             rs = stmt.executeQuery(sqlSelectAll);
 
+            System.out.println(tableName);
             printResultSet(rs, maxStringColWidth);
 
         } catch (SQLException e) {
@@ -566,14 +567,7 @@ public class DBTablePrinter {
                 sj.append(name);
             }
             sj.delete(0, 2);
-
-            String info = "Printing " + rowCount;
-            info += rowCount > 1 ? " rows from " : " row from ";
-            info += tableNames.size() > 1 ? "tables " : "table ";
-            info += sj.toString();
-
-            System.out.println(info);
-
+            
             // Print out the formatted column labels
             System.out.print(strToPrint.toString());
 

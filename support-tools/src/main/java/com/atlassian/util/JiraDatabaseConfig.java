@@ -1,6 +1,9 @@
 package com.atlassian.util;
 
-import nu.xom.*;
+import nu.xom.Builder;
+import nu.xom.Document;
+import nu.xom.Element;
+import nu.xom.ParsingException;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -9,6 +12,7 @@ import java.net.URLClassLoader;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Discovers DB configuration and performs benchmarks on it
@@ -90,10 +94,11 @@ public class JiraDatabaseConfig
 
     /**
      * Loads database drives into the system class loader 
-     * @param libPath Directory to where driver jars are located
+     * @param jiraInstallDir Jira installation directory
      * @throws IOException
      */
-    public void loadJar(Path libPath) throws IOException {
+    public void loadJar(String jiraInstallDir) throws IOException {
+        Path libPath = Paths.get(jiraInstallDir, "lib");
         Path jarPath = findJarForDB(libPath);
 
         URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
@@ -127,5 +132,11 @@ public class JiraDatabaseConfig
 
     public String getDriverClass() {
         return driverClass;
+    }
+
+    public static JiraDatabaseConfig autoDiscoverConfig(String jiraHome, String jiraInstallDir) throws IOException {
+        JiraDatabaseConfig config = JiraDatabaseConfig.parseDBConfig(jiraHome);
+        config.loadJar(jiraInstallDir);
+        return config;
     }
 }
