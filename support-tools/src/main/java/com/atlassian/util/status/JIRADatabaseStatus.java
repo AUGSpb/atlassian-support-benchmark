@@ -11,7 +11,7 @@ import java.sql.SQLException;
 
 
 public class JIRADatabaseStatus {
-    
+
     private final ConnectionFactory connectionFactory;
     private final String dbType;
 
@@ -40,15 +40,16 @@ public class JIRADatabaseStatus {
             throw e;
         } catch (ArrayIndexOutOfBoundsException e) {
             System.out.println("Usage: \n"
-                    + "\tjava " + JIRADatabaseStatus.class.getName() + " user password url driverClass [noOfRuns]"
+                    + "\tjava " + JIRADatabaseStatus.class.getName() + " user password url driverClass"
                     + "\tjava " + JIRADatabaseStatus.class.getName() + " jira_home jira_install_dir");
+            throw e;
         }
         new JIRADatabaseStatus(connectionFactory, dbConfig.getDBType()).analyzeConnection();
     }
-    
-    public void analyzeConnection () throws SQLException {
+
+    public void analyzeConnection() throws SQLException {
         ConnectionTester tester = null;
-        switch(dbType) {
+        switch (dbType) {
             case "mysql":
                 throw new NotImplementedException();
             case "postgres72":
@@ -61,14 +62,14 @@ public class JIRADatabaseStatus {
         }
         tester.run();
     }
-    
+
     private abstract class ConnectionTester {
         protected Connection connection;
-        
+
         public ConnectionTester(Connection connection) {
             this.connection = connection;
         }
-        
+
         public abstract void run() throws SQLException;
     }
 
@@ -80,11 +81,11 @@ public class JIRADatabaseStatus {
 
         @Override
         public void run() throws SQLException {
-            System.out.println("You will probably need to enable these parameters to get data:"
-                    + "The parameter track_activities enables monitoring of the current command being executed by any server process.\n"
-                    + "The parameter track_counts controls whether statistics are collected about table and index accesses.\n"
-                    + "The parameter track_functions enables tracking of usage of user-defined functions.\n"
-                    + "The parameter track_io_timing enables monitoring of block read and write times.");
+            System.out.println("You will probably need to enable these parameters to get data:\n"
+                    + "\t* The parameter track_activities enables monitoring of the current command being executed by any server process.\n"
+                    + "\t* The parameter track_counts controls whether statistics are collected about table and index accesses.\n"
+                    + "\t* The parameter track_functions enables tracking of usage of user-defined functions.\n"
+                    + "\t* The parameter track_io_timing enables monitoring of block read and write times.");
 
             String[] tables = {
                     "pg_stat_activity",            // One row per server process, showing information related to the current activity of that process, such as state and current query. See pg_stat_activity for details.

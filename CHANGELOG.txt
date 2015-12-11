@@ -1,0 +1,5 @@
+1.2
+—————————————————————————————————-
+* Added auto discover of db configuration
+* Added postgres benchmark
+* Updated code style to IDEA defaults

@@ -2,49 +2,38 @@ package com.atlassian.util.benchmark;
 
 import java.util.concurrent.Callable;
 
-public class TimedTestRunner
-{
+public class TimedTestRunner {
     private final Callable<?> callable;
     private final TimerList timerList;
 
-    public TimedTestRunner(String name, Callable<?> callable)
-    {
+    public TimedTestRunner(String name, Callable<?> callable) {
         this.timerList = new TimerList(name);
         this.callable = callable;
     }
 
-    String getName()
-    {
+    String getName() {
         return timerList.getName();
     }
 
-    Timer run()
-    {
+    Timer run() {
         Timer timer = timerList.getTimer();
-        try
-        {
+        try {
             callable.call();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             timer.setThrowable(e);
-        }
-        finally
-        {
+        } finally {
             timer.stop();
         }
         return timer;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return timerList.toString();
     }
 
-    public TimerList getTimerList()
-    {
+    public TimerList getTimerList() {
         return timerList;
     }
 }
