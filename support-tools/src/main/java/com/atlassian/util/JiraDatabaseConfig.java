@@ -1,5 +1,6 @@
 package com.atlassian.util;
 
+import com.atlassian.util.benchmark.ConnectionFactory;
 import nu.xom.*;
 
 import java.io.IOException;
@@ -9,6 +10,7 @@ import java.net.URLClassLoader;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Discovers DB configuration and performs benchmarks on it
@@ -30,6 +32,19 @@ public class JiraDatabaseConfig
         this.url = url;
         this.dbType = dbType;
         this.driverClass = driverClass;
+    }
+
+    /**
+     * Discovers Jira DB config and loads drivers in classpath
+     * @param jiraHome
+     * @param jiraInstallDir
+     * @return
+     * @throws IOException
+     */
+    public static JiraDatabaseConfig autoConfigDB(String jiraHome, String jiraInstallDir) throws IOException {
+        JiraDatabaseConfig config = JiraDatabaseConfig.parseDBConfig(jiraHome);
+        config.loadJar(Paths.get(jiraInstallDir, "lib"));
+        return config;
     }
     
     public static JiraDatabaseConfig parseDBConfig(String jiraHome) {

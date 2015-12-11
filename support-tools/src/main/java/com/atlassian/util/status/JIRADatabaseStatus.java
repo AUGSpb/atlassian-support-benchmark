@@ -1,9 +1,11 @@
 package com.atlassian.util.status;
 
+import com.atlassian.util.JiraDatabaseConfig;
 import com.atlassian.util.benchmark.ConnectionFactory;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import thirdparty.DBTablePrinter;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -16,6 +18,32 @@ public class JIRADatabaseStatus {
     public JIRADatabaseStatus(ConnectionFactory connectionFactory, String dbType) {
         this.connectionFactory = connectionFactory;
         this.dbType = dbType;
+    }
+
+    public static void main(String[] args) throws Exception {
+        ConnectionFactory connectionFactory = null;
+        JiraDatabaseConfig dbConfig = null;
+
+        try {
+            if (args.length < 4) {
+                String jiraHome = args[0];
+                String jiraInstallDir = args[1];
+                dbConfig = JiraDatabaseConfig.autoConfigDB(jiraHome, jiraInstallDir);
+                connectionFactory = new ConnectionFactory(dbConfig);
+            } else {
+                connectionFactory = new ConnectionFactory(args[0], args[1], args[2], args[3]);
+                // connectionFactory = new ConnectionFactory("jirauser", "jirauser",
+                // "jdbc:jtds:sqlserver://192.168.0.89:1433/jed", "net.sourceforge.jtds.jdbc.Driver");
+            }
+        } catch (IOException e) {
+            System.out.println("There was an error reading your JIRA config from " + args[0]);
+            throw e;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println("Usage: \n"
+                    + "\tjava " + JIRADatabaseStatus.class.getName() + " user password url driverClass [noOfRuns]"
+                    + "\tjava " + JIRADatabaseStatus.class.getName() + " jira_home jira_install_dir");
+        }
+        new JIRADatabaseStatus(connectionFactory, dbConfig.getDBType()).analyzeConnection();
     }
     
     public void analyzeConnection () throws SQLException {

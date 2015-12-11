@@ -9,8 +9,7 @@ import java.sql.SQLException;
 
 import static org.apache.commons.lang3.Validate.notNull;
 
-public class ConnectionFactory
-{
+public class ConnectionFactory {
     private final String userName;
     private final String password;
     private final String url;

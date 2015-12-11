@@ -3,7 +3,6 @@ package com.atlassian.util.benchmark;
 import com.atlassian.util.JiraDatabaseConfig;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,7 +22,7 @@ public class JIRASQLPerformance
             if (args.length < 4) {
                 String jiraHome = args[0];
                 String jiraInstallDir = args[1];
-                connectionFactory = autoDiscoverConfig(jiraHome, jiraInstallDir);
+                connectionFactory = JiraDatabaseConfig.autoConfigDB(jiraHome, jiraInstallDir);
                 noOfRuns = (args.length == 3) ? Integer.valueOf(args[2]) : NUMBER_OF_RUNS;
             } else {
                 connectionFactory = new ConnectionFactory(args[0], args[1], args[2], args[3]);
@@ -35,17 +34,11 @@ public class JIRASQLPerformance
             System.out.println("There was an error reading your JIRA config from " + args[0]);
             throw e;
         } catch (ArrayIndexOutOfBoundsException e) {
-            System.out.println("Usage: java " + JIRASQLPerformance.class.getName() + " user password url driverClass [noOfRuns]");
+            System.out.println("Usage: \n"
+                    + "\tjava " + JIRASQLPerformance.class.getName() + " user password url driverClass [noOfRuns]"
+                    + "\tjava " + JIRASQLPerformance.class.getName() + " jira_home jira_install_dir");
         }
         new JIRASQLPerformance(connectionFactory, noOfRuns).call();
-    }
-    
-    private static ConnectionFactory autoDiscoverConfig(String jiraHome, String jiraInstallDir) throws IOException {
-        JiraDatabaseConfig config = JiraDatabaseConfig.parseDBConfig(jiraHome);
-        config.loadJar(Paths.get(jiraInstallDir, "lib"));
-        final ConnectionFactory connectionFactory = new ConnectionFactory(config);
-        
-        return connectionFactory;
     }
 
     private final ConnectionFactory connectionFactory;
