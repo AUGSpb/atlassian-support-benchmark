@@ -21,8 +21,8 @@ public class JIRASQLPerformance {
             if (args.length < 4) {
                 String jiraHome = args[0];
                 String jiraInstallDir = args[1];
-                JiraDatabaseConfig config = JiraDatabaseConfig.autoDiscoverConfig(jiraHome, jiraInstallDir);
-                connectionFactory = new ConnectionFactory(config);
+                JiraDatabaseConfig dbConfig = JiraDatabaseConfig.autoConfigDB(jiraHome, jiraInstallDir);
+                connectionFactory = new ConnectionFactory(dbConfig);
                 noOfRuns = (args.length == 3) ? Integer.valueOf(args[2]) : NUMBER_OF_RUNS;
             } else {
                 connectionFactory = new ConnectionFactory(args[0], args[1], args[2], args[3]);
@@ -40,7 +40,7 @@ public class JIRASQLPerformance {
         }
         new JIRASQLPerformance(connectionFactory, noOfRuns).call();
     }
-    
+
     private final ConnectionFactory connectionFactory;
     private final int issueCount;
 
@@ -49,15 +49,13 @@ public class JIRASQLPerformance {
         this.issueCount = issueCount;
     }
 
-    public Object call() throws Exception
-    {
+    public Object call() throws Exception {
         new Benchmark("JIRA SQL: " + connectionFactory.getURL(), getTests(), issueCount).run();
 
         return null;
     }
 
-    private List<TimedTestRunner> getTests() throws Exception
-    {
+    private List<TimedTestRunner> getTests() throws Exception {
         final List<Long> ids = new ArrayList<>(issueCount);
         final Connection conn = connectionFactory.getConnection();
         final Random rnd = new Random();
@@ -68,23 +66,20 @@ public class JIRASQLPerformance {
             int noOfIssues = rs.getInt(1);
             if (noOfIssues < issueCount) {
                 throw new IllegalArgumentException("Cannot iterate over " + issueCount + " issues as there are only " + noOfIssues
-                    + " issues in the database");
+                        + " issues in the database");
             }
 
             // generate issueCount ints between zero and totalNoOfIssues
             Set<Integer> picks = new HashSet<Integer>(issueCount);
-            while (picks.size() < issueCount)
-            {
+            while (picks.size() < issueCount) {
                 picks.add(rnd.nextInt(noOfIssues));
             }
             final PreparedStatement selectIDs = conn.prepareStatement("SELECT id FROM jiraissue");
             rs = selectIDs.executeQuery();
 
-            for (int i = 0; i < noOfIssues; i++)
-            {
+            for (int i = 0; i < noOfIssues; i++) {
                 rs.next();
-                if (picks.contains(i))
-                {
+                if (picks.contains(i)) {
                     ids.add(rs.getLong(1));
                 }
             }
@@ -99,36 +94,29 @@ public class JIRASQLPerformance {
         final Map<String, String> workflow = new HashMap<>();
 
         final List<TimedTestRunner> result = new ArrayList<>();
-        result.add(new TimedTestRunner("retrieveIssue", new Callable<Object>()
-        {
-            public Object call() throws Exception
-            {
+        result.add(new TimedTestRunner("retrieveIssue", new Callable<Object>() {
+            public Object call() throws Exception {
                 selectIssue.setLong(1, ids.get(rnd.nextInt(issueCount)));
                 issueResultSet.set(selectIssue.executeQuery());
                 return null;
             }
         }));
 
-        result.add(new TimedTestRunner("getIssue", new Callable<Object>()
-        {
-            public Object call() throws Exception
-            {
+        result.add(new TimedTestRunner("getIssue", new Callable<Object>() {
+            public Object call() throws Exception {
                 issue.clear();
                 ResultSet rs = issueResultSet.get();
                 rs.next();
                 final int columnCount = rs.getMetaData().getColumnCount();
-                for (int i = 1; i <= columnCount; i++)
-                {
+                for (int i = 1; i <= columnCount; i++) {
                     issue.put(rs.getMetaData().getColumnName(i), rs.getString(i));
                 }
                 return null;
             }
         }));
 
-        result.add(new TimedTestRunner("retrieveWF", new Callable<Object>()
-        {
-            public Object call() throws Exception
-            {
+        result.add(new TimedTestRunner("retrieveWF", new Callable<Object>() {
+            public Object call() throws Exception {
                 final String workflowID = issue.get("WORKFLOW_ID");
                 if (workflowID != null) {
                     selectWorkFlow.setLong(1, Long.valueOf(workflowID));
@@ -138,10 +126,8 @@ public class JIRASQLPerformance {
             }
         }));
 
-        result.add(new TimedTestRunner("getWorkflow", new Callable<Object>()
-        {
-            public Object call() throws Exception
-            {
+        result.add(new TimedTestRunner("getWorkflow", new Callable<Object>() {
+            public Object call() throws Exception {
                 workflow.clear();
                 ResultSet rs = wfResultSet.get();
                 if (rs == null) {
@@ -150,8 +136,7 @@ public class JIRASQLPerformance {
                 }
                 rs.next();
                 final int columnCount = rs.getMetaData().getColumnCount();
-                for (int i = 1; i <= columnCount; i++)
-                {
+                for (int i = 1; i <= columnCount; i++) {
                     workflow.put(rs.getMetaData().getColumnName(i), rs.getString(i));
                 }
                 return null;

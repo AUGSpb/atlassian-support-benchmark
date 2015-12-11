@@ -9,9 +9,8 @@ import java.util.Collections;
 import java.util.List;
 
 
-public class Benchmark
-{
-	static final boolean PRINT_DETAILS = false;
+public class Benchmark {
+    static final boolean PRINT_DETAILS = false;
     static final int MAX_TABLE_WIDTH = 80;
 
     private final String name;
@@ -19,13 +18,11 @@ public class Benchmark
     private final int runs;
     private final PrintWriter writer;
 
-    Benchmark(String name, List<TimedTestRunner> runners, int runs)
-    {
+    Benchmark(String name, List<TimedTestRunner> runners, int runs) {
         this(name, runners, runs, new PrintWriter(System.out, true));
     }
 
-    Benchmark(String name, List<TimedTestRunner> runners, int runs, PrintWriter writer)
-    {
+    Benchmark(String name, List<TimedTestRunner> runners, int runs, PrintWriter writer) {
         this.name = name;
         this.runners = Collections.unmodifiableList(new ArrayList<>(runners));
         this.runs = runs;
@@ -35,18 +32,15 @@ public class Benchmark
     private void printDetails(List<List<Timer>> runResults) {
         // write header
         writer.print("#");
-        for (TimedTestRunner runner : runners)
-        {
+        for (TimedTestRunner runner : runners) {
             writer.print("\t");
             writer.print(runner.getName());
         }
         writer.println();
 
-        for (int i = 0; i < runs; i++)
-        {
+        for (int i = 0; i < runs; i++) {
             writer.print(i);
-            for (Timer timer : runResults.get(i))
-            {
+            for (Timer timer : runResults.get(i)) {
                 writer.print("\t");
                 writer.print(timer);
             }
@@ -55,16 +49,12 @@ public class Benchmark
     }
 
     /**
-     *
      * @return empty list if PRINT_DETAILS is false, a matrix of Timer otherwise
      */
-    private List<List<Timer>> runTests ()
-    {
+    private List<List<Timer>> runTests() {
         List<List<Timer>> runResults = new ArrayList<>();
-        for (int i = 0; i < runs; i++)
-        {
-            for (TimedTestRunner runner : runners)
-            {
+        for (int i = 0; i < runs; i++) {
+            for (TimedTestRunner runner : runners) {
                 Timer result = runner.run();
                 if (PRINT_DETAILS) {
                     runResults.get(i).add(result);
@@ -74,13 +64,12 @@ public class Benchmark
         return runResults;
     }
 
-    public void run()
-    {
+    public void run() {
         List<List<Timer>> runResults = runTests();
-        
+
         writer.print("Benchmark: " + name + "\n");
         if (PRINT_DETAILS) {
-			printDetails(runResults);
+            printDetails(runResults);
         }
 
         writer.println();
@@ -88,9 +77,8 @@ public class Benchmark
         V1_AsciiTable table = V1_AsciiTable.newTable(5, MAX_TABLE_WIDTH);
         table.setTheme(V1_StandardTableThemes.LATEX_LIGHT);
         table.addRow("stat", "avg", "median", "tmin", "tmax");
-        
-        for (TimedTestRunner runner : runners)
-        {
+
+        for (TimedTestRunner runner : runners) {
             TimerList timer = runner.getTimerList();
             table.addRow(runner.getName(), timer.average(), timer.median(), timer.min(), timer.max());
         }

@@ -17,9 +17,8 @@ import java.nio.file.Paths;
 /**
  * Discovers DB configuration and performs benchmarks on it
  */
-public class JiraDatabaseConfig
-{
-    private static final Class[] parameters = new Class[] {URL.class};
+public class JiraDatabaseConfig {
+    private static final Class[] parameters = new Class[]{URL.class};
 
     private final String dbType;
     private final String username;
@@ -27,7 +26,7 @@ public class JiraDatabaseConfig
     private final String url;
     private final String driverClass;
 
-    
+
     public JiraDatabaseConfig(String username, String password, String url, String dbType, String driverClass) {
         this.username = username;
         this.password = password;
@@ -35,7 +34,26 @@ public class JiraDatabaseConfig
         this.dbType = dbType;
         this.driverClass = driverClass;
     }
-    
+
+    /**
+     * Discovers Jira DB config and loads drivers in classpath
+     *
+     * @param jiraHome
+     * @param jiraInstallDir
+     * @return
+     * @throws IOException
+     */
+    public static JiraDatabaseConfig autoConfigDB(String jiraHome, String jiraInstallDir) throws IOException {
+        JiraDatabaseConfig config = JiraDatabaseConfig.parseDBConfig(jiraHome);
+        System.out.println("Detected following DB configuration:"
+                + "\n\tdbType: " + config.getDBType()
+                + "\n\tdriverClass: " + config.getDriverClass()
+                + "\n\tusername" + config.getUsername()
+                + "\n\turl: " + config.getUrl());
+        config.loadJar(jiraInstallDir);
+        return config;
+    }
+
     public static JiraDatabaseConfig parseDBConfig(String jiraHome) {
         try {
             Builder parser = new Builder();
@@ -67,6 +85,7 @@ public class JiraDatabaseConfig
 
     /**
      * Selects the jar that matches the DB
+     *
      * @param libPath
      * @return
      * @throws IOException
@@ -84,7 +103,7 @@ public class JiraDatabaseConfig
             throw new IOException("There was an error finding our DB driverClass", ex);
         }
     }
-    
+
     private String getMinimalDBType() {
         if ("postgres72".equals(dbType)) {
             return "postgres";
@@ -93,7 +112,7 @@ public class JiraDatabaseConfig
     }
 
     /**
-     * Loads database drives into the system class loader 
+     * Loads database drives into the system class loader
      * @param jiraInstallDir Jira installation directory
      * @throws IOException
      */
@@ -107,7 +126,7 @@ public class JiraDatabaseConfig
         try {
             Method method = sysclass.getDeclaredMethod("addURL", parameters);
             method.setAccessible(true);
-            method.invoke(sysloader, new Object[] {jarPath.toUri().toURL()});
+            method.invoke(sysloader, new Object[]{jarPath.toUri().toURL()});
         } catch (Throwable t) {
             t.printStackTrace();
             throw new IOException("Error, could not add URL to system classloader");

@@ -1,7 +1,6 @@
 package com.atlassian.util.benchmark;
 
 import com.atlassian.util.JiraDatabaseConfig;
-import com.sun.istack.internal.NotNull;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -9,17 +8,17 @@ import java.sql.SQLException;
 
 import static org.apache.commons.lang3.Validate.notNull;
 
-public class ConnectionFactory
-{
+public class ConnectionFactory {
     private final String userName;
     private final String password;
     private final String url;
 
-    public ConnectionFactory(@NotNull String username, String password, @NotNull String url, @NotNull String driverClass) {
+    public ConnectionFactory(String username, String password, String url, String driverClass) {
         notNull(username);
         notNull(driverClass);
         notNull(url);
-        
+
+        // Check that driver class is accessible
         try {
             Class.forName(driverClass);
         } catch (ClassNotFoundException e) {
@@ -34,6 +33,12 @@ public class ConnectionFactory
         this(config.getUsername(), config.getPassword(), config.getUrl(), config.getDriverClass());
     }
 
+    /**
+     * Attempts to establish a connection to the given database URL.
+     * The <code>DriverManager</code> attempts to select an appropriate driver from
+     * the set of registered JDBC drivers.
+     * @return a connection
+     */
     public Connection getConnection() {
         try {
             return DriverManager.getConnection(url, userName, password);
@@ -42,8 +47,7 @@ public class ConnectionFactory
         }
     }
 
-    public String getURL()
-    {
+    public String getURL() {
         return url;
     }
 }
