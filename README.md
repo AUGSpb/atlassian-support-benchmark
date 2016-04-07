@@ -17,7 +17,7 @@ Usage
 To run the disk access benchmark:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    java -jar support-tools.jar -Djava.io.tmpdir=/directory/to/test
+    java -Djava.io.tmpdir=/directory/to/test -jar support-tools.jar
 	
 
 To run the SQL benchmark:
