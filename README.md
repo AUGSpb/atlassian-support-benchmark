@@ -15,13 +15,11 @@ Usage
 -----
 
 To run the disk access benchmark:
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     java -Djava.io.tmpdir=/directory/to/test -jar support-tools.jar
 	
 
 To run the SQL benchmark:
-^^^^^^^^^^^^^^^^^^^^^^^^^
 
     java -cp support-tools.jar \
 	    com.atlassian.util.benchmark.JIRASQLPerformance
@@ -33,8 +31,7 @@ or
 	    com.atlassian.util.benchmark.JIRASQLPerformance
     user passwrod driverclass jdbc-url driver-classname [numberOfRuns]
 
-To run DB status
-^^^^^^^^^^^^^^^^
+To run DB status:
 
     java -cp support-tools.jar \
 	    com.atlassian.util.status.JIRADatabaseStatus
