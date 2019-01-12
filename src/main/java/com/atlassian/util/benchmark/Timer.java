@@ -10,9 +10,8 @@ class Timer {
         return this;
     }
 
-    Timer stop() {
+    void stop() {
         total = System.nanoTime() - start;
-        return this;
     }
 
     void setThrowable(Throwable t) {

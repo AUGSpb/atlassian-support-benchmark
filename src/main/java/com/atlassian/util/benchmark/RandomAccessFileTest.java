@@ -14,7 +14,7 @@ public class RandomAccessFileTest implements Callable<Object> {
         try {
             runs = (args.length == 0) ? 1000 : Integer.valueOf(args[0]);
         } catch (RuntimeException e) {
-            System.out.println("Usage: java " + RandomAccessFileTest.class + " [noOfTestRuns]");
+            System.err.println("Usage: java " + RandomAccessFileTest.class + " [noOfTestRuns]");
             throw e;
         }
         new RandomAccessFileTest(runs).call();
@@ -37,32 +37,24 @@ public class RandomAccessFileTest implements Callable<Object> {
 
         final AtomicReference<RandomAccessFile> fileRef = new AtomicReference<>();
 
-        final TimedTestRunner openFile = new TimedTestRunner("open", new Callable<Object>() {
-            public Object call() throws Exception {
-                fileRef.set(new RandomAccessFile(file, "rw"));
-                return null;
-            }
+        final TimedTestRunner openFile = new TimedTestRunner("open", () -> {
+            fileRef.set(new RandomAccessFile(file, "rw"));
+            return null;
         });
 
-        final TimedTestRunner readWrite = new TimedTestRunner("r/w", new Callable<Object>() {
-            public Object call() throws Exception {
-                fileRef.get().writeChars("This is a stress test written String\n");
-                fileRef.get().readLine();
-                return null;
-            }
+        final TimedTestRunner readWrite = new TimedTestRunner("r/w", () -> {
+            fileRef.get().writeChars("This is a stress test written String\n");
+            fileRef.get().readLine();
+            return null;
         });
 
-        final TimedTestRunner close = new TimedTestRunner("close", new Callable<Object>() {
-            public Object call() throws Exception {
-                fileRef.get().close();
-                return null;
-            }
+        final TimedTestRunner close = new TimedTestRunner("close", () -> {
+            fileRef.get().close();
+            return null;
         });
-        final TimedTestRunner delete = new TimedTestRunner("delete", new Callable<Object>() {
-            public Object call() throws Exception {
-                file.delete();
-                return null;
-            }
+        final TimedTestRunner delete = new TimedTestRunner("delete", () -> {
+            file.delete();
+            return null;
         });
 
         return Arrays.asList(new TimedTestRunner[]

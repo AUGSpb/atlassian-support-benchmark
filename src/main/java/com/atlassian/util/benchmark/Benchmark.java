@@ -9,19 +9,22 @@ import java.util.List;
 
 
 public class Benchmark {
-    static final boolean PRINT_DETAILS = false;
-    static final int MAX_TABLE_WIDTH = 80;
-
+    private static final boolean PRINT_DETAILS = false;
+    static final int DEFAULT_NUMBER_OF_RUNS = 1000;
     private final String name;
     private final List<TimedTestRunner> runners;
     private final int runs;
     private final PrintWriter writer;
 
+    Benchmark(String name, List<TimedTestRunner> runners) {
+        this(name, runners, DEFAULT_NUMBER_OF_RUNS, new PrintWriter(System.out, true));
+    }
+
     Benchmark(String name, List<TimedTestRunner> runners, int runs) {
         this(name, runners, runs, new PrintWriter(System.out, true));
     }
 
-    Benchmark(String name, List<TimedTestRunner> runners, int runs, PrintWriter writer) {
+    private Benchmark(String name, List<TimedTestRunner> runners, int runs, PrintWriter writer) {
         this.name = name;
         this.runners = Collections.unmodifiableList(new ArrayList<>(runners));
         this.runs = runs;
@@ -30,21 +33,17 @@ public class Benchmark {
 
     private void printDetails(List<List<Timer>> runResults) {
         // write header
-        writer.print("#");
-        for (TimedTestRunner runner : runners) {
-            writer.print("\t");
-            writer.print(runner.getName());
-        }
-        writer.println();
+        AsciiTable table = new AsciiTable();
+        table.addRule();
+        table.addRow("#", runners.stream().iterator().next().getName());
+        table.addRule();
 
         for (int i = 0; i < runs; i++) {
-            writer.print(i);
-            for (Timer timer : runResults.get(i)) {
-                writer.print("\t");
-                writer.print(timer);
-            }
-            writer.println();
+            table.addRule();
+            table.addRow(i, runResults.get(i).stream().iterator().next());
+            table.addRule();
         }
+        writer.print(table.render());
     }
 
     /**
@@ -53,11 +52,15 @@ public class Benchmark {
     private List<List<Timer>> runTests() {
         List<List<Timer>> runResults = new ArrayList<>();
         for (int i = 0; i < runs; i++) {
+            List<Timer> testList = new ArrayList<>();
             for (TimedTestRunner runner : runners) {
                 Timer result = runner.run();
                 if (PRINT_DETAILS) {
-                    runResults.get(i).add(result);
+                    testList.add(result);
                 }
+            }
+            if (PRINT_DETAILS) {
+                runResults.add(testList);
             }
         }
         return runResults;
@@ -74,6 +77,7 @@ public class Benchmark {
         writer.println();
         writer.println("TOTALS");
         AsciiTable table = new AsciiTable();
+        table.addRule();
         table.addRow("stat", "avg", "median", "tmin", "tmax");
         table.addRule();
         for (TimedTestRunner runner : runners) {
@@ -82,7 +86,7 @@ public class Benchmark {
             table.addRule();
         }
 
-        writer.print(table.render());
+        writer.println(table.render());
 
         writer.println("All times are in nanoseconds.");
         writer.flush();

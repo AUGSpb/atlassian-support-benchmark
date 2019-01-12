@@ -38,8 +38,8 @@ public class JiraDatabaseConfig {
     /**
      * Discovers Jira DB config and loads drivers in classpath
      *
-     * @param jiraHome
-     * @param jiraInstallDir
+     * @param jiraHome home directory
+     * @param jiraInstallDir installation directory
      * @return
      * @throws IOException
      */
@@ -48,7 +48,7 @@ public class JiraDatabaseConfig {
         System.out.println("Detected following DB configuration:"
                 + "\n\tdbType: " + config.getDBType()
                 + "\n\tdriverClass: " + config.getDriverClass()
-                + "\n\tusername" + config.getUsername()
+                + "\n\tusername: " + config.getUsername()
                 + "\n\turl: " + config.getUrl());
         config.loadJar(jiraInstallDir);
         return config;

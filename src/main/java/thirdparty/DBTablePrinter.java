@@ -1,6 +1,6 @@
 package thirdparty;
 
-/**
+/*
 Database Table Printer
 Copyright (C) 2014  Hami Galip Torun
 Email: hamitorun@e-fabrika.net

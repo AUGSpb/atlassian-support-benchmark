@@ -70,7 +70,7 @@ public class JIRADatabaseStatus {
             this.connection = connection;
         }
 
-        public abstract void run() throws SQLException;
+        public abstract void run();
     }
 
     private class PostgresTester extends ConnectionTester {
@@ -80,7 +80,7 @@ public class JIRADatabaseStatus {
         }
 
         @Override
-        public void run() throws SQLException {
+        public void run() {
             System.out.println("You will probably need to enable these parameters to get data:\n"
                     + "\t* The parameter track_activities enables monitoring of the current command being executed by any server process.\n"
                     + "\t* The parameter track_counts controls whether statistics are collected about table and index accesses.\n"
