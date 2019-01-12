@@ -145,7 +145,7 @@ public class JIRASQLPerformance {
             workflow.clear();
             ResultSet rs = wfResultSet.get();
             if (rs == null) {
-                System.out.println("No workflows found");
+                System.err.println("No workflows found");
                 return null;
             }
             rs.next();
@@ -162,7 +162,8 @@ public class JIRASQLPerformance {
         final JIRASQLPerformance.StringMap customField = new JIRASQLPerformance.StringMap();
 
         result.add(new TimedTestRunner(RETRIEVE_CUSTOM_FIELD_VALUES, () -> {
-            selectCustomFieldValues.setLong(1, Long.valueOf(issue.get("id")));
+            final String issueID = issue.get("ISSUE");
+            selectCustomFieldValues.setLong(1, Long.valueOf(issueID));
             customFieldResultSet.set(selectWorkFlow.executeQuery());
             return null;
         }));
@@ -170,9 +171,13 @@ public class JIRASQLPerformance {
         result.add(new TimedTestRunner(GET_CUSTOM_FIELD_VALUE, () -> {
             customField.clear();
             ResultSet rs = customFieldResultSet.get();
+            if (rs == null) {
+                System.err.println("No custom field values found");
+                System.err.println("Please, check consistency of custom fields");
+                return null;
+            }
             rs.next();
             int columnCount = rs.getMetaData().getColumnCount();
-
             for (int i = 1; i <= columnCount; ++i) {
                 customField.put(rs.getMetaData().getColumnName(i), rs.getString(i));
             }
