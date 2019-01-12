@@ -1,7 +1,6 @@
 package com.atlassian.util.benchmark;
 
-import de.vandermeer.asciitable.v1.V1_AsciiTable;
-import de.vandermeer.asciitable.v1.V1_StandardTableThemes;
+import de.vandermeer.asciitable.AsciiTable;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -74,13 +73,13 @@ public class Benchmark {
 
         writer.println();
         writer.println("TOTALS");
-        V1_AsciiTable table = V1_AsciiTable.newTable(5, MAX_TABLE_WIDTH);
-        table.setTheme(V1_StandardTableThemes.LATEX_LIGHT);
+        AsciiTable table = new AsciiTable();
         table.addRow("stat", "avg", "median", "tmin", "tmax");
-
+        table.addRule();
         for (TimedTestRunner runner : runners) {
             TimerList timer = runner.getTimerList();
             table.addRow(runner.getName(), timer.average(), timer.median(), timer.min(), timer.max());
+            table.addRule();
         }
 
         writer.print(table.render());

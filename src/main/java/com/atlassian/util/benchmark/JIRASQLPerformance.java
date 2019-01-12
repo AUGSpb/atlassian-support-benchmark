@@ -85,11 +85,11 @@ public class JIRASQLPerformance {
             }
         }
 
-        final PreparedStatement selectIssue = conn.prepareStatement("SELECT * FROM jiraIssue WHERE id = ?");
+        final PreparedStatement selectIssue = conn.prepareStatement("SELECT * FROM jiraissue WHERE id = ?");
         final AtomicReference<ResultSet> issueResultSet = new AtomicReference<>();
         final Map<String, String> issue = new HashMap<>();
 
-        final PreparedStatement selectWorkFlow = conn.prepareStatement("SELECT * FROM os_currentStep WHERE entry_id = ?");
+        final PreparedStatement selectWorkFlow = conn.prepareStatement("SELECT * FROM OS_CURRENTSTEP WHERE entry_id = ?");
         final AtomicReference<ResultSet> wfResultSet = new AtomicReference<>();
         final Map<String, String> workflow = new HashMap<>();
 
