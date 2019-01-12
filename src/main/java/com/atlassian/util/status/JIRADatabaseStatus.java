@@ -8,6 +8,7 @@ import thirdparty.DBTablePrinter;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Objects;
 
 
 public class JIRADatabaseStatus {
@@ -21,7 +22,7 @@ public class JIRADatabaseStatus {
     }
 
     public static void main(String[] args) throws Exception {
-        ConnectionFactory connectionFactory = null;
+        ConnectionFactory connectionFactory;
         JiraDatabaseConfig dbConfig = null;
 
         try {
@@ -44,10 +45,10 @@ public class JIRADatabaseStatus {
                     + "\tjava " + JIRADatabaseStatus.class.getName() + " jira_home jira_install_dir");
             throw e;
         }
-        new JIRADatabaseStatus(connectionFactory, dbConfig.getDBType()).analyzeConnection();
+        new JIRADatabaseStatus(connectionFactory, Objects.requireNonNull(dbConfig).getDBType()).analyzeConnection();
     }
 
-    public void analyzeConnection() throws SQLException {
+    public void analyzeConnection() {
         ConnectionTester tester = null;
         switch (dbType) {
             case "mysql":
@@ -60,11 +61,11 @@ public class JIRADatabaseStatus {
             case "sqlserver":
                 throw new NotImplementedException();
         }
-        tester.run();
+        Objects.requireNonNull(tester).run();
     }
 
     private abstract class ConnectionTester {
-        protected Connection connection;
+        protected final Connection connection;
 
         public ConnectionTester(Connection connection) {
             this.connection = connection;

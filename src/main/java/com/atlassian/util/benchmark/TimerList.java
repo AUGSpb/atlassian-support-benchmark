@@ -18,7 +18,7 @@ class TimerList {
     }
 
     String average() {
-        long count = 0;
+        long count = 0L;
         for (Timer timer : timers) {
             count = count + timer.total;
         }

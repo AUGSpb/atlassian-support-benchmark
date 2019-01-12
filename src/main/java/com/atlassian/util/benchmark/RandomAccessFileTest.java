@@ -57,7 +57,6 @@ public class RandomAccessFileTest implements Callable<Object> {
             return null;
         });
 
-        return Arrays.asList(new TimedTestRunner[]
-                {openFile, readWrite, close, delete});
+        return Arrays.asList(openFile, readWrite, close, delete);
     }
 }

@@ -105,7 +105,7 @@ public class DBTablePrinter {
         /**
          * Column label.
          */
-        private String label;
+        private final String label;
 
         /**
          * Generic SQL type of the column as defined in
@@ -114,7 +114,7 @@ public class DBTablePrinter {
          * java.sql.Types
          * </a>.
          */
-        private int type;
+        private final int type;
 
         /**
          * Generic SQL type name of the column as defined in
@@ -123,7 +123,7 @@ public class DBTablePrinter {
          * java.sql.Types
          * </a>.
          */
-        private String typeName;
+        private final String typeName;
 
         /**
          * Width of the column that will be adjusted according to column label
@@ -134,7 +134,7 @@ public class DBTablePrinter {
         /**
          * Column values from each row of a <code>ResultSet</code>.
          */
-        private List<String> values = new ArrayList<>();
+        private final List<String> values = new ArrayList<>();
 
         /**
          * Flag for text justification using <code>String.format</code>.

@@ -12,6 +12,14 @@ import java.util.concurrent.atomic.AtomicReference;
 import static com.atlassian.util.benchmark.Benchmark.DEFAULT_NUMBER_OF_RUNS;
 
 public class JIRASQLPerformance {
+
+    private static final String RETRIEVE_ISSUE = "retrieve-issue";
+    private static final String GET_ISSUE = "get-issue";
+    private static final String RETRIEVE_WORKFLOW = "retrieve-workflow";
+    private static final String GET_WORKFLOW = "get-workflow";
+    private static final String RETRIEVE_CUSTOM_FIELD_VALUES = "retrieve-custom-field-value";
+    private static final String GET_CUSTOM_FIELD_VALUE = "get-custom-field-value";
+    private static final String COLUMN_ISSUE_WORKFLOW_ID = "WORKFLOW_ID";
     private final ConnectionFactory connectionFactory;
     private final int issueCount;
 
@@ -39,7 +47,7 @@ public class JIRASQLPerformance {
             }
             (new JIRASQLPerformance(connectionFactory, noOfRuns)).call();
         } catch (IOException e) {
-            System.err.println("There was an error reading your JIRA config from " + args[0]);
+            System.err.println("There was an error reading your Jira config from " + args[0]);
             throw e;
         } catch (ArrayIndexOutOfBoundsException e) {
             System.err.println("Usage: "
@@ -106,13 +114,14 @@ public class JIRASQLPerformance {
         final Map<String, String> workflow = new HashMap<>();
 
         final List<TimedTestRunner> result = new ArrayList<>();
-        result.add(new TimedTestRunner("retrieveIssue", () -> {
+
+        result.add(new TimedTestRunner(RETRIEVE_ISSUE, () -> {
             selectIssue.setLong(1, ids.get(rnd.nextInt(issueCount)));
             issueResultSet.set(selectIssue.executeQuery());
             return null;
         }));
 
-        result.add(new TimedTestRunner("get-issue", () -> {
+        result.add(new TimedTestRunner(GET_ISSUE, () -> {
             issue.clear();
             ResultSet rs = issueResultSet.get();
             rs.next();
@@ -123,8 +132,8 @@ public class JIRASQLPerformance {
             return null;
         }));
 
-        result.add(new TimedTestRunner("retrieve-workflow", () -> {
-            final String workflowID = issue.get("WORKFLOW_ID");
+        result.add(new TimedTestRunner(RETRIEVE_WORKFLOW, () -> {
+            final String workflowID = issue.get(COLUMN_ISSUE_WORKFLOW_ID);
             if (workflowID != null) {
                 selectWorkFlow.setLong(1, Long.valueOf(workflowID));
                 wfResultSet.set(selectWorkFlow.executeQuery());
@@ -132,7 +141,7 @@ public class JIRASQLPerformance {
             return null;
         }));
 
-        result.add(new TimedTestRunner("get-workflow", () -> {
+        result.add(new TimedTestRunner(GET_WORKFLOW, () -> {
             workflow.clear();
             ResultSet rs = wfResultSet.get();
             if (rs == null) {
@@ -147,6 +156,43 @@ public class JIRASQLPerformance {
             return null;
         }));
 
+        // Custom field field tests
+        final PreparedStatement selectCustomFieldValues = conn.prepareStatement("SELECT ID, ISSUE, CUSTOMFIELD, PARENTKEY, STRINGVALUE, NUMBERVALUE, TEXTVALUE, DATEVALUE, VALUETYPE FROM customfieldvalue WHERE ISSUE=?");
+        final AtomicReference<ResultSet> customFieldResultSet = new AtomicReference<>();
+        final JIRASQLPerformance.StringMap customField = new JIRASQLPerformance.StringMap();
+
+        result.add(new TimedTestRunner(RETRIEVE_CUSTOM_FIELD_VALUES, () -> {
+            selectCustomFieldValues.setLong(1, Long.valueOf(issue.get("id")));
+            customFieldResultSet.set(selectWorkFlow.executeQuery());
+            return null;
+        }));
+
+        result.add(new TimedTestRunner(GET_CUSTOM_FIELD_VALUE, () -> {
+            customField.clear();
+            ResultSet rs = customFieldResultSet.get();
+            rs.next();
+            int columnCount = rs.getMetaData().getColumnCount();
+
+            for (int i = 1; i <= columnCount; ++i) {
+                customField.put(rs.getMetaData().getColumnName(i), rs.getString(i));
+            }
+
+            return null;
+        }));
+
         return result;
+    }
+
+    private static final class StringMap extends HashMap<String, String> {
+        private StringMap() {
+        }
+
+        public String put(String key, String value) {
+            return super.put(key.toLowerCase(), value);
+        }
+
+        public String get(Object key) {
+            return super.get(((String) key).toLowerCase());
+        }
     }
 }
