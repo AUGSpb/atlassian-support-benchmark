@@ -163,6 +163,10 @@ public class JIRASQLPerformance {
 
         result.add(new TimedTestRunner(RETRIEVE_CUSTOM_FIELD_VALUES, () -> {
             final String issueID = issue.get("ISSUE");
+            if (issueID == null || issueID.isEmpty()){
+                System.err.println("Please, check consistency of customfieldvalue table in DB");
+                return null;
+            }
             selectCustomFieldValues.setLong(1, Long.valueOf(issueID));
             customFieldResultSet.set(selectWorkFlow.executeQuery());
             return null;
