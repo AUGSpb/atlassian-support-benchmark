@@ -6,7 +6,13 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.atlassian.util.benchmark.Benchmark.DEFAULT_NUMBER_OF_RUNS;
@@ -20,6 +26,8 @@ public class JIRASQLPerformance {
     private static final String GET_WORKFLOW = "get-workflow";
     private static final String RETRIEVE_CUSTOM_FIELD_VALUES = "retrieve-custom-field-value";
     private static final String GET_CUSTOM_FIELD_VALUE = "get-custom-field-value";
+    private static final String RETRIEVE_COMMENTS = "retrieve-comments";
+    private static final String GET_COMMENTS = "get-comments";
     private static final String COLUMN_ISSUE_WORKFLOW_ID = "WORKFLOW_ID";
     private final ConnectionFactory connectionFactory;
     private final int issueCount;
@@ -114,6 +122,16 @@ public class JIRASQLPerformance {
         final AtomicReference<ResultSet> wfResultSet = new AtomicReference<>();
         final Map<String, String> workflow = new HashMap<>();
 
+        // Custom field field tests
+        final PreparedStatement selectCustomFieldValues = conn.prepareStatement("SELECT * FROM customfieldvalue WHERE ISSUE = ?");
+        final AtomicReference<ResultSet> customFieldResultSet = new AtomicReference<>();
+        final Map<String, String> customField = new HashMap<>();
+
+        // Custom field field tests
+        final PreparedStatement selectComment = conn.prepareStatement("SELECT * FROM jiraaction WHERE issueid = ?");
+        final AtomicReference<ResultSet> commentResultSet = new AtomicReference<>();
+        final Map<String, String> comment = new HashMap<>();
+
         final List<TimedTestRunner> result = new ArrayList<>();
 
         result.add(new TimedTestRunner(RETRIEVE_ISSUE, () -> {
@@ -157,19 +175,14 @@ public class JIRASQLPerformance {
             return null;
         }));
 
-        // Custom field field tests
-        final PreparedStatement selectCustomFieldValues = conn.prepareStatement("SELECT ID, ISSUE, CUSTOMFIELD, PARENTKEY, STRINGVALUE, NUMBERVALUE, TEXTVALUE, DATEVALUE, VALUETYPE FROM customfieldvalue WHERE ISSUE=?");
-        final AtomicReference<ResultSet> customFieldResultSet = new AtomicReference<>();
-        final JIRASQLPerformance.StringMap customField = new JIRASQLPerformance.StringMap();
-
         result.add(new TimedTestRunner(RETRIEVE_CUSTOM_FIELD_VALUES, () -> {
-            final String issueID = issue.get("ISSUE");
+            final String issueID = issue.get("ID");
             if (issueID == null || issueID.isEmpty()){
-                System.err.println("Please, check consistency of customfieldvalue table in DB");
+                System.err.println("Please, check consistency of custom field value table in DB");
                 return null;
             }
             selectCustomFieldValues.setLong(1, Long.valueOf(issueID));
-            customFieldResultSet.set(selectWorkFlow.executeQuery());
+            customFieldResultSet.set(selectCustomFieldValues.executeQuery());
             return null;
         }));
 
@@ -190,19 +203,32 @@ public class JIRASQLPerformance {
             return null;
         }));
 
+        result.add(new TimedTestRunner(RETRIEVE_COMMENTS, () -> {
+            final String issueID = issue.get("ID");
+            if (issueID == null || issueID.isEmpty()){
+                System.err.println("Please, check consistency of custom field value table in DB");
+                return null;
+            }
+            selectComment.setLong(1, Long.valueOf(issueID));
+            commentResultSet.set(selectComment.executeQuery());
+            return null;
+        }));
+
+        result.add(new TimedTestRunner(GET_COMMENTS, () -> {
+            comment.clear();
+            ResultSet rs = commentResultSet.get();
+            if (rs == null) {
+                System.err.println("No comments found");
+                return null;
+            }
+            rs.next();
+            int columnCount = rs.getMetaData().getColumnCount();
+            for (int i = 1; i <= columnCount; ++i) {
+                comment.put(rs.getMetaData().getColumnName(i), rs.getString(i));
+            }
+            return null;
+        }));
+
         return result;
-    }
-
-    private static final class StringMap extends HashMap<String, String> {
-        private StringMap() {
-        }
-
-        public String put(String key, String value) {
-            return super.put(key.toLowerCase(), value);
-        }
-
-        public String get(Object key) {
-            return super.get(((String) key).toLowerCase());
-        }
     }
 }
