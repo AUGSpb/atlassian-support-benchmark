@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static com.atlassian.util.benchmark.Benchmark.DEFAULT_NUMBER_OF_RUNS;
 
+@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 public class JIRASQLPerformance {
 
     private static final String RETRIEVE_ISSUE = "retrieve-issue";
