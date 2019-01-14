@@ -252,7 +252,7 @@ public class JIRASQLPerformance {
             worklog.clear();
             ResultSet rs = worklogResultSet.get();
             if (rs == null) {
-                System.err.println("No comments found");
+                System.err.println("No worklog found");
                 return null;
             }
             rs.next();
