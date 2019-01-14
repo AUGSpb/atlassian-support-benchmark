@@ -1,6 +1,7 @@
 package com.atlassian.util.benchmark;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 class TimerList {
@@ -27,14 +28,14 @@ class TimerList {
 
     String getMedian() {
         List<Timer> orderedTimers = new ArrayList<>(timers);
-        orderedTimers.sort((o1, o2) -> new Long(o2.total - o1.total).intValue());
-        return Util.format(orderedTimers.get((int) Math.ceil(timers.size() / 2)).total);
+        orderedTimers.sort((o1, o2) -> new Long(o1.total - o2.total).intValue());
+        return Util.format(orderedTimers.get((int) Math.ceil(timers.size() / 2) - 1).total);
     }
 
     String getPercentile(double percentile) {
         List<Timer> orderedTimers = new ArrayList<>(timers);
-        orderedTimers.sort((o1, o2) -> new Long(o2.total - o1.total).intValue());
-        return Util.format(orderedTimers.get((int) Math.ceil((percentile / (double) 100) * (double) timers.size())).total);
+        orderedTimers.sort((o1, o2) -> new Long(o1.total - o2.total).intValue());
+        return Util.format(orderedTimers.get((int) Math.ceil((percentile / (double) 100) * (double) timers.size()) - 1 ).total);
     }
 
     String getMax() {

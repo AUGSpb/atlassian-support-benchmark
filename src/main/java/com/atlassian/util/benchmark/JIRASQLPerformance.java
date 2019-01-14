@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.atlassian.util.benchmark.Benchmark.DEFAULT_NUMBER_OF_RUNS;
@@ -185,12 +186,16 @@ public class JIRASQLPerformance {
 
         result.add(new TimedTestRunner(RETRIEVE_CUSTOM_FIELD_VALUES, () -> {
             final String issueID = issue.get("ID");
-            if (issueID == null || issueID.isEmpty()){
+            if (issueID == null || issueID.isEmpty()) {
                 System.err.println("Please, check consistency of custom field value table in DB");
                 return null;
             }
             selectCustomFieldValues.setLong(1, Long.valueOf(issueID));
-            customFieldResultSet.set(selectCustomFieldValues.executeQuery());
+            ResultSet rs = selectCustomFieldValues.executeQuery();
+            if (rs == null) {
+                return null;
+            }
+            customFieldResultSet.set(rs);
             return null;
         }));
 
@@ -199,12 +204,13 @@ public class JIRASQLPerformance {
             ResultSet rs = customFieldResultSet.get();
             if (rs == null) {
                 System.err.println("No custom field values found");
-                System.err.println("Please, check consistency of custom fields");
                 return null;
             }
-            rs.next();
+            if (!rs.next()){
+                return null;
+            }
             int columnCount = rs.getMetaData().getColumnCount();
-            for (int i = 1; i <= columnCount; ++i) {
+            for (int i = 1; i <= columnCount; i++) {
                 customField.put(rs.getMetaData().getColumnName(i), rs.getString(i));
             }
 
@@ -213,12 +219,17 @@ public class JIRASQLPerformance {
 
         result.add(new TimedTestRunner(RETRIEVE_COMMENTS, () -> {
             final String issueID = issue.get("ID");
-            if (issueID == null || issueID.isEmpty()){
+            if (issueID == null || issueID.isEmpty()) {
                 System.err.println("Please, check consistency of custom field value table in DB");
                 return null;
             }
+
             selectComment.setLong(1, Long.valueOf(issueID));
-            commentResultSet.set(selectComment.executeQuery());
+            ResultSet rs = selectComment.executeQuery();
+            if (rs == null) {
+                return null;
+            }
+            commentResultSet.set(rs);
             return null;
         }));
 
@@ -229,9 +240,11 @@ public class JIRASQLPerformance {
                 System.err.println("No comments found");
                 return null;
             }
-            rs.next();
+            if (!rs.next()){
+                return null;
+            }
             int columnCount = rs.getMetaData().getColumnCount();
-            for (int i = 1; i <= columnCount; ++i) {
+            for (int i = 1; i <= columnCount; i++) {
                 comment.put(rs.getMetaData().getColumnName(i), rs.getString(i));
             }
             return null;
@@ -239,12 +252,16 @@ public class JIRASQLPerformance {
 
         result.add(new TimedTestRunner(RETRIEVE_WORKLOG, () -> {
             final String issueID = issue.get("ID");
-            if (issueID == null || issueID.isEmpty()){
+            if (issueID == null || issueID.isEmpty()) {
                 System.err.println("Please, check consistency of custom field value table in DB");
                 return null;
             }
             selectWorklog.setLong(1, Long.valueOf(issueID));
-            worklogResultSet.set(selectWorklog.executeQuery());
+            ResultSet rs = selectWorklog.executeQuery();
+            if (rs == null) {
+                return null;
+            }
+            worklogResultSet.set(rs);
             return null;
         }));
 
@@ -255,9 +272,11 @@ public class JIRASQLPerformance {
                 System.err.println("No worklog found");
                 return null;
             }
-            rs.next();
+            if (!rs.next()){
+                return null;
+            }
             int columnCount = rs.getMetaData().getColumnCount();
-            for (int i = 1; i <= columnCount; ++i) {
+            for (int i = 1; i <= columnCount; i++) {
                 worklog.put(rs.getMetaData().getColumnName(i), rs.getString(i));
             }
             return null;

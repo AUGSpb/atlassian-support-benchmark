@@ -10,6 +10,7 @@ import java.util.List;
 
 public class Benchmark {
     private static final boolean PRINT_DETAILS = false;
+    private static final int MAX_TABLE_WIDTH = 80;
     static final int DEFAULT_NUMBER_OF_RUNS = 1000;
     private final String name;
     private final List<TimedTestRunner> runners;
@@ -87,12 +88,12 @@ public class Benchmark {
                     timer.getMedian(),
                     timer.getMin(),
                     timer.getMax(),
-                    timer.getPercentile(0.8),
-                    timer.getPercentile(0.95),
-                    timer.getPercentile(0.99));
+                    timer.getPercentile(80),
+                    timer.getPercentile(95),
+                    timer.getPercentile(99));
             table.addRule();
         }
-
+        table.getContext().setWidth(MAX_TABLE_WIDTH);
         writer.println(table.render());
 
         writer.println("All times are in nanoseconds.");
