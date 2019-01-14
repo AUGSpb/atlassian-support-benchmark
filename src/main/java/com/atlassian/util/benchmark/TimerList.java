@@ -17,7 +17,7 @@ class TimerList {
         return timer.start();
     }
 
-    String average() {
+    String getAverage() {
         long count = 0L;
         for (Timer timer : timers) {
             count = count + timer.total;
@@ -25,13 +25,19 @@ class TimerList {
         return Util.format(count / timers.size());
     }
 
-    String median() {
+    String getMedian() {
         List<Timer> orderedTimers = new ArrayList<>(timers);
         orderedTimers.sort((o1, o2) -> new Long(o2.total - o1.total).intValue());
-        return Util.format(orderedTimers.get(timers.size() / 2).total);
+        return Util.format(orderedTimers.get((int) Math.ceil(timers.size() / 2)).total);
     }
 
-    String max() {
+    String getPercentile(double percentile) {
+        List<Timer> orderedTimers = new ArrayList<>(timers);
+        orderedTimers.sort((o1, o2) -> new Long(o2.total - o1.total).intValue());
+        return Util.format(orderedTimers.get((int) Math.ceil((percentile / (double) 100) * (double) timers.size())).total);
+    }
+
+    String getMax() {
         long max = 0;
         for (Timer timer : timers) {
             max = Math.max(max, timer.total);
@@ -39,7 +45,7 @@ class TimerList {
         return Util.format(max);
     }
 
-    String min() {
+    String getMin() {
         long min = Long.MAX_VALUE;
         for (Timer timer : timers) {
             min = Math.min(min, timer.total);
@@ -53,6 +59,6 @@ class TimerList {
 
     @Override
     public String toString() {
-        return name + "\t" + average() + "\t" + median() + "\t" + min() + "\t" + max();
+        return name + "\t" + getAverage() + "\t" + getMedian() + "\t" + getMin() + "\t" + getMax();
     }
 }

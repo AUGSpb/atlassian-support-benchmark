@@ -78,11 +78,18 @@ public class Benchmark {
         writer.println("TOTALS");
         AsciiTable table = new AsciiTable();
         table.addRule();
-        table.addRow("stat", "avg", "median", "tmin", "tmax");
+        table.addRow("stat", "avg", "median", "tmin", "tmax", "80th", "95th", "99th");
         table.addRule();
         for (TimedTestRunner runner : runners) {
             TimerList timer = runner.getTimerList();
-            table.addRow(runner.getName(), timer.average(), timer.median(), timer.min(), timer.max());
+            table.addRow(runner.getName(),
+                    timer.getAverage(),
+                    timer.getMedian(),
+                    timer.getMin(),
+                    timer.getMax(),
+                    timer.getPercentile(0.8),
+                    timer.getPercentile(0.95),
+                    timer.getPercentile(0.99));
             table.addRule();
         }
 

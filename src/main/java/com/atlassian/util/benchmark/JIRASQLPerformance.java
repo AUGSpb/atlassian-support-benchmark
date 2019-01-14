@@ -28,6 +28,8 @@ public class JIRASQLPerformance {
     private static final String GET_CUSTOM_FIELD_VALUE = "get-custom-field-value";
     private static final String RETRIEVE_COMMENTS = "retrieve-comments";
     private static final String GET_COMMENTS = "get-comments";
+    private static final String RETRIEVE_WORKLOG = "retrieve-worklogs";
+    private static final String GET_WORKLOG = "get-worklogs";
     private static final String COLUMN_ISSUE_WORKFLOW_ID = "WORKFLOW_ID";
     private final ConnectionFactory connectionFactory;
     private final int issueCount;
@@ -113,11 +115,12 @@ public class JIRASQLPerformance {
                 }
             }
         }
-
+        // General Issues tests
         final PreparedStatement selectIssue = conn.prepareStatement("SELECT * FROM jiraissue WHERE id = ?");
         final AtomicReference<ResultSet> issueResultSet = new AtomicReference<>();
         final Map<String, String> issue = new HashMap<>();
 
+        // Workflow step tests
         final PreparedStatement selectWorkFlow = conn.prepareStatement("SELECT * FROM OS_CURRENTSTEP WHERE entry_id = ?");
         final AtomicReference<ResultSet> wfResultSet = new AtomicReference<>();
         final Map<String, String> workflow = new HashMap<>();
@@ -127,10 +130,15 @@ public class JIRASQLPerformance {
         final AtomicReference<ResultSet> customFieldResultSet = new AtomicReference<>();
         final Map<String, String> customField = new HashMap<>();
 
-        // Custom field field tests
+        // Comment tests
         final PreparedStatement selectComment = conn.prepareStatement("SELECT * FROM jiraaction WHERE issueid = ?");
         final AtomicReference<ResultSet> commentResultSet = new AtomicReference<>();
         final Map<String, String> comment = new HashMap<>();
+
+        // Worklog tests
+        final PreparedStatement selectWorklog = conn.prepareStatement("SELECT * FROM worklog WHERE issueid = ?");
+        final AtomicReference<ResultSet> worklogResultSet = new AtomicReference<>();
+        final Map<String, String> worklog = new HashMap<>();
 
         final List<TimedTestRunner> result = new ArrayList<>();
 
@@ -225,6 +233,32 @@ public class JIRASQLPerformance {
             int columnCount = rs.getMetaData().getColumnCount();
             for (int i = 1; i <= columnCount; ++i) {
                 comment.put(rs.getMetaData().getColumnName(i), rs.getString(i));
+            }
+            return null;
+        }));
+
+        result.add(new TimedTestRunner(RETRIEVE_WORKLOG, () -> {
+            final String issueID = issue.get("ID");
+            if (issueID == null || issueID.isEmpty()){
+                System.err.println("Please, check consistency of custom field value table in DB");
+                return null;
+            }
+            selectWorklog.setLong(1, Long.valueOf(issueID));
+            worklogResultSet.set(selectWorklog.executeQuery());
+            return null;
+        }));
+
+        result.add(new TimedTestRunner(GET_WORKLOG, () -> {
+            worklog.clear();
+            ResultSet rs = worklogResultSet.get();
+            if (rs == null) {
+                System.err.println("No comments found");
+                return null;
+            }
+            rs.next();
+            int columnCount = rs.getMetaData().getColumnCount();
+            for (int i = 1; i <= columnCount; ++i) {
+                worklog.put(rs.getMetaData().getColumnName(i), rs.getString(i));
             }
             return null;
         }));
