@@ -63,7 +63,7 @@ public class JIRADatabaseStatus {
         Objects.requireNonNull(tester).run();
     }
 
-    private abstract class ConnectionTester {
+    private abstract static class ConnectionTester {
         protected final Connection connection;
 
         public ConnectionTester(Connection connection) {
