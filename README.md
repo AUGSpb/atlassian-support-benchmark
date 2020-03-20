@@ -21,9 +21,7 @@ To run the disk access benchmark:
 
 To run the SQL benchmark:
 
-    java -cp support-tools.jar \
-	    com.atlassian.util.benchmark.JIRASQLPerformance
-    jira_home jira_install_dir [numberOfRuns]
+    java -cp support-tools.jar com.atlassian.util.benchmark.JIRASQLPerformance ${jira_home} ${jira_install_dir} [numberOfRuns]
 
 or
 
