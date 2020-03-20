@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.atlassian.util.benchmark.Benchmark.DEFAULT_NUMBER_OF_RUNS;

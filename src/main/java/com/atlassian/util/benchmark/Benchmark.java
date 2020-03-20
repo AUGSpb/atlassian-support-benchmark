@@ -53,7 +53,7 @@ public class Benchmark {
     private List<List<Timer>> runTests() {
         List<List<Timer>> runResults = new ArrayList<>();
         for (int i = 0; i < runs; i++) {
-            List<Timer> testList = new ArrayList<>();
+            List<Timer> testList;
             for (TimedTestRunner runner : runners) {
                 Timer result = runner.run();
                 if (PRINT_DETAILS) {

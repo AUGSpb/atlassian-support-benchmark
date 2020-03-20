@@ -40,7 +40,7 @@ public class JiraDatabaseConfig {
      *
      * @param jiraHome home directory
      * @param jiraInstallDir installation directory
-     * @return
+     * @return configuration of config
      * @throws IOException
      */
     public static JiraDatabaseConfig autoConfigDB(String jiraHome, String jiraInstallDir) throws IOException {
