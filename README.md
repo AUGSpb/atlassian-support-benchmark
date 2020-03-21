@@ -25,9 +25,7 @@ To run the SQL benchmark:
 
 or
 
-    java -cp support-tools.jar:com.atlassian.util.benchmark.JIRASQLPerformance:/path/to/your/jdbc-driver.jar \
-	    com.atlassian.util.benchmark.JIRASQLPerformance
-    user passwrod driverclass jdbc-url driver-classname [numberOfRuns]
+    java -cp support-tools.jar:com.atlassian.util.benchmark.JIRASQLPerformance:/path/to/your/jdbc-driver.jar  com.atlassian.util.benchmark.JIRASQLPerformance user passwrod driverclass jdbc-url driver-classname [numberOfRuns]
 
 To run DB status:
 

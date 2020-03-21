@@ -38,7 +38,7 @@ public class JiraDatabaseConfig {
     /**
      * Discovers Jira DB config and loads drivers in classpath
      *
-     * @param jiraHome home directory
+     * @param jiraHome       home directory
      * @param jiraInstallDir installation directory
      * @return configuration of config
      * @throws IOException
@@ -72,7 +72,7 @@ public class JiraDatabaseConfig {
 
             Element passwordChildren = jdbc.getFirstChildElement("password");
             if (passwordChildren.getChildCount() > 0) {
-                password = usernameChildren.getChild(0).getValue();
+                password = passwordChildren.getChild(0).getValue();
             }
 
             String driverClass = jdbc.getFirstChildElement("driver-class").getChild(0).getValue();
@@ -113,20 +113,20 @@ public class JiraDatabaseConfig {
 
     /**
      * Loads database drives into the system class loader
+     *
      * @param jiraInstallDir Jira installation directory
      * @throws IOException
      */
     public void loadJar(String jiraInstallDir) throws IOException {
         Path libPath = Paths.get(jiraInstallDir, "lib");
         Path jarPath = findJarForDB(libPath);
-
-        URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-        Class sysclass = URLClassLoader.class;
-
+        System.out.println("\tDriverClass path: " + jarPath.toString());
+        URLClassLoader sysLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
+        Class<URLClassLoader> sysClass = URLClassLoader.class;
         try {
-            Method method = sysclass.getDeclaredMethod("addURL", parameters);
+            Method method = sysClass.getDeclaredMethod("addURL", parameters);
             method.setAccessible(true);
-            method.invoke(sysloader, jarPath.toUri().toURL());
+            method.invoke(sysLoader, jarPath.toUri().toURL());
         } catch (Throwable t) {
             t.printStackTrace();
             throw new IOException("Error, could not add URL to system classloader");

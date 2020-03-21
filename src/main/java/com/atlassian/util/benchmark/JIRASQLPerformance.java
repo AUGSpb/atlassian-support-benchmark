@@ -88,10 +88,16 @@ public class JIRASQLPerformance {
 
     private List<TimedTestRunner> getTests() throws Exception {
         final List<Long> ids = new ArrayList<>(issueCount);
-        final Connection conn = connectionFactory.getConnection();
-        final Random rnd = new Random();
+
+        final Connection connection = connectionFactory.getConnection();
+        if (connection.isValid(10)) {
+            System.out.println("Connection status is valid.");
+        } else {
+            System.out.println("Connection is not valid.");
+        }
+        final Random random = new Random();
         {
-            final PreparedStatement countIssues = conn.prepareStatement("SELECT count(*) FROM jiraissue");
+            final PreparedStatement countIssues = connection.prepareStatement("SELECT count(*) FROM jiraissue");
             ResultSet rs = countIssues.executeQuery();
             rs.next();
             int noOfIssues = rs.getInt(1);
@@ -103,9 +109,9 @@ public class JIRASQLPerformance {
             // generate issueCount ints between zero and totalNoOfIssues
             Set<Integer> picks = new HashSet<>(issueCount);
             while (picks.size() < issueCount) {
-                picks.add(rnd.nextInt(noOfIssues));
+                picks.add(random.nextInt(noOfIssues));
             }
-            final PreparedStatement selectIDs = conn.prepareStatement("SELECT id FROM jiraissue");
+            final PreparedStatement selectIDs = connection.prepareStatement("SELECT id FROM jiraissue");
             rs = selectIDs.executeQuery();
 
             for (int i = 0; i < noOfIssues; i++) {
@@ -116,34 +122,34 @@ public class JIRASQLPerformance {
             }
         }
         // General Issues tests
-        final PreparedStatement selectIssue = conn.prepareStatement("SELECT * FROM jiraissue WHERE id = ?");
+        final PreparedStatement selectIssue = connection.prepareStatement("SELECT * FROM jiraissue WHERE id = ?");
         final AtomicReference<ResultSet> issueResultSet = new AtomicReference<>();
         final Map<String, String> issue = new HashMap<>();
 
         // Workflow step tests
-        final PreparedStatement selectWorkFlow = conn.prepareStatement("SELECT * FROM OS_CURRENTSTEP WHERE entry_id = ?");
+        final PreparedStatement selectWorkFlow = connection.prepareStatement("SELECT * FROM OS_CURRENTSTEP WHERE entry_id = ?");
         final AtomicReference<ResultSet> wfResultSet = new AtomicReference<>();
         final Map<String, String> workflow = new HashMap<>();
 
         // Custom field field tests
-        final PreparedStatement selectCustomFieldValues = conn.prepareStatement("SELECT * FROM customfieldvalue WHERE ISSUE = ?");
+        final PreparedStatement selectCustomFieldValues = connection.prepareStatement("SELECT * FROM customfieldvalue WHERE ISSUE = ?");
         final AtomicReference<ResultSet> customFieldResultSet = new AtomicReference<>();
         final Map<String, String> customField = new HashMap<>();
 
         // Comment tests
-        final PreparedStatement selectComment = conn.prepareStatement("SELECT * FROM jiraaction WHERE issueid = ?");
+        final PreparedStatement selectComment = connection.prepareStatement("SELECT * FROM jiraaction WHERE issueid = ?");
         final AtomicReference<ResultSet> commentResultSet = new AtomicReference<>();
         final Map<String, String> comment = new HashMap<>();
 
         // Worklog tests
-        final PreparedStatement selectWorklog = conn.prepareStatement("SELECT * FROM worklog WHERE issueid = ?");
+        final PreparedStatement selectWorklog = connection.prepareStatement("SELECT * FROM worklog WHERE issueid = ?");
         final AtomicReference<ResultSet> worklogResultSet = new AtomicReference<>();
         final Map<String, String> worklog = new HashMap<>();
 
         final List<TimedTestRunner> result = new ArrayList<>();
 
         result.add(new TimedTestRunner(RETRIEVE_ISSUE, () -> {
-            selectIssue.setLong(1, ids.get(rnd.nextInt(issueCount)));
+            selectIssue.setLong(1, ids.get(random.nextInt(issueCount)));
             issueResultSet.set(selectIssue.executeQuery());
             return null;
         }));
@@ -205,7 +211,7 @@ public class JIRASQLPerformance {
                 System.err.println("No custom field values found");
                 return null;
             }
-            if (!rs.next()){
+            if (!rs.next()) {
                 return null;
             }
             int columnCount = rs.getMetaData().getColumnCount();
@@ -239,7 +245,7 @@ public class JIRASQLPerformance {
                 System.err.println("No comments found");
                 return null;
             }
-            if (!rs.next()){
+            if (!rs.next()) {
                 return null;
             }
             int columnCount = rs.getMetaData().getColumnCount();
@@ -271,7 +277,7 @@ public class JIRASQLPerformance {
                 System.err.println("No worklog found");
                 return null;
             }
-            if (!rs.next()){
+            if (!rs.next()) {
                 return null;
             }
             int columnCount = rs.getMetaData().getColumnCount();
@@ -280,7 +286,7 @@ public class JIRASQLPerformance {
             }
             return null;
         }));
-
+        connection.close();
         return result;
     }
 }
