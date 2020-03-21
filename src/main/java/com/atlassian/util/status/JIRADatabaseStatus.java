@@ -51,14 +51,16 @@ public class JIRADatabaseStatus {
         ConnectionTester tester = null;
         switch (dbType) {
             case "mysql":
-                throw new NotImplementedException();
+                tester = new MySQLTester(connectionFactory.getConnection());
+                break;
             case "postgres72":
                 tester = new PostgresTester(connectionFactory.getConnection());
                 break;
             case "oracle":
                 throw new NotImplementedException();
             case "sqlserver":
-                throw new NotImplementedException();
+                tester = new MSSQLTester(connectionFactory.getConnection());
+                break;
         }
         Objects.requireNonNull(tester).run();
     }
@@ -73,7 +75,7 @@ public class JIRADatabaseStatus {
         public abstract void run();
     }
 
-    private class PostgresTester extends ConnectionTester {
+    private static class PostgresTester extends ConnectionTester {
 
         public PostgresTester(Connection connection) {
             super(connection);
@@ -119,4 +121,61 @@ public class JIRADatabaseStatus {
             }
         }
     }
+
+    private static class MySQLTester extends ConnectionTester {
+
+        public MySQLTester(Connection connection) {
+            super(connection);
+        }
+
+        @Override
+        public void run() {
+            System.out.println("You will probably need to enable these parameters to get data:\n"
+                    + "\t* The parameter track_activities enables monitoring of the current command being executed by any server process.\n"
+                    + "\t* The parameter track_counts controls whether statistics are collected about table and index accesses.\n"
+                    + "\t* The parameter track_functions enables tracking of usage of user-defined functions.\n"
+                    + "\t* The parameter track_io_timing enables monitoring of block read and write times.");
+
+            String[] tables = {
+                    "INFORMATION_SCHEMA.PROCESSLIST",            // One row per server process, showing information related to the current activity of that process, such as state and current query. See INFORMATION_SCHEMA.PROCESSLIST for details.
+                    "INFORMATION_SCHEMA.STATISTICS",             // The STATISTICS table provides information about table indexes.
+                    "INFORMATION_SCHEMA.TABLES",                 // One row for each table in the current database, showing statistics about accesses to that specific table. See INFORMATION_SCHEMA.TABLES for details.
+                    "INFORMATION_SCHEMA.ENGINES",                // The ENGINES table provides information about storage engines.
+                    "INFORMATION_SCHEMA.GLOBAL_VARIABLES",       // Show Global variables
+            };
+            for (String table : tables) {
+                DBTablePrinter.printTable(connection, table);
+            }
+        }
+    }
+
+    private static class MSSQLTester extends ConnectionTester {
+
+        public MSSQLTester(Connection connection) {
+            super(connection);
+        }
+
+        @Override
+        public void run() {
+            System.out.println("You will probably need to enable these parameters to get data:\n"
+                    + "\t* The parameter track_activities enables monitoring of the current command being executed by any server process.\n"
+                    + "\t* The parameter track_counts controls whether statistics are collected about table and index accesses.\n"
+                    + "\t* The parameter track_functions enables tracking of usage of user-defined functions.\n"
+                    + "\t* The parameter track_io_timing enables monitoring of block read and write times.");
+            // docs based on the https://docs.microsoft.com/ru-ru/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql
+            String[] tables = {
+                    "sys.sysprocesses", // Contains information about processes that are running on an instance of SQL Server.
+                    "sys.indexes",      // Contains one row for each index and table in the current database.
+                    "sys.index_columns",
+                    "sys.configurations", // For a list of all server configuration options,
+                    "sys.dm_os_performance_counters", // Returns a row per performance counter maintained by the server
+                    "sys.dm_os_process_memory", // Most memory allocations that are attributed to the SQL Server process space
+                    "sys.dm_os_waiting_tasks", // Returns information about the wait queue of tasks that are waiting on some resource
+            };
+            for (String table : tables) {
+                DBTablePrinter.printTable(connection, table);
+            }
+        }
+    }
+
 }

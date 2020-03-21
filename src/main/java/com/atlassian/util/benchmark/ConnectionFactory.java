@@ -45,7 +45,7 @@ public class ConnectionFactory {
      * @return a connection
      */
     public Connection getConnection() {
-        if (connection !=null){
+        if (connection != null) {
             return connection;
         }
         try {

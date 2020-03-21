@@ -29,9 +29,7 @@ or
 
 To run DB status:
 
-    java -cp support-tools.jar \
-	    com.atlassian.util.status.JIRADatabaseStatus
-		jira_home jira_install_dir
+    java -cp support-tools.jar com.atlassian.util.status.JIRADatabaseStatus ${jira_home} ${jira_install_dir}
 
 or:
 

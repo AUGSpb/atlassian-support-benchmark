@@ -53,7 +53,7 @@ public class DBTablePrinter {
     /**
      * Default maximum number of rows to query and print.
      */
-    private static final int DEFAULT_MAX_ROWS = 10;
+    private static final int DEFAULT_MAX_ROWS = 100;
 
     /**
      * Default maximum width for text columns
