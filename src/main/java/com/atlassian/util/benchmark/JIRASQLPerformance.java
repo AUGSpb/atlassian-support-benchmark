@@ -63,7 +63,7 @@ public class JIRASQLPerformance {
         } catch (ArrayIndexOutOfBoundsException e) {
             System.err.println("Usage: "
                     + "\njava " + JIRASQLPerformance.class.getName() + " user password url driverClass [noOfRuns]"
-                    + "\njava " + JIRASQLPerformance.class.getName() + " jirahome jirainstalldir [noOfRuns]");
+                    + "\njava " + JIRASQLPerformance.class.getName() + " jira_home jira_install_dir [noOfRuns]");
         } catch (NumberFormatException e) {
             System.err.println("noOfRuns must be an integer (e.g. 1000)");
             System.err.println("Usage: "

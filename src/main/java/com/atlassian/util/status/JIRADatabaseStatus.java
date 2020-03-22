@@ -56,11 +56,15 @@ public class JIRADatabaseStatus {
             case "postgres72":
                 tester = new PostgresTester(connectionFactory.getConnection());
                 break;
-            case "oracle":
-                throw new NotImplementedException();
             case "sqlserver":
                 tester = new MSSQLTester(connectionFactory.getConnection());
                 break;
+            case "oracle":
+                throw new NotImplementedException();
+        }
+        if (tester == null) {
+            System.out.println("\n\tSomethings wrong with determine database type.");
+            return;
         }
         Objects.requireNonNull(tester).run();
     }
