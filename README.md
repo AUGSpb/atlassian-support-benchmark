@@ -3,7 +3,7 @@ Library containing file access and sql benchmarks
 Compile
 -------
 
-    mvn package
+    mvn clean package
 	
 It will generate two jars:
 
@@ -25,7 +25,7 @@ To run the SQL benchmark:
 
 or
 
-    java -cp support-tools.jar:com.atlassian.util.benchmark.JIRASQLPerformance:/path/to/your/jdbc-driver.jar  com.atlassian.util.benchmark.JIRASQLPerformance user passwrod driverclass jdbc-url driver-classname [numberOfRuns]
+    java -cp support-tools.jar:com.atlassian.util.benchmark.JIRASQLPerformance:/path/to/your/jdbc-driver.jar  com.atlassian.util.benchmark.JIRASQLPerformance user password driverclass jdbc-url driver-classname [numberOfRuns]
 
 To run DB status:
 
@@ -33,6 +33,4 @@ To run DB status:
 
 or:
 
-    java -cp support-tools.jar \
-	    com.atlassian.util.status.JIRADatabaseStatus
-		user passwrod driverclass jdbc-url driver-classname
+    java -cp support-tools.jar com.atlassian.util.status.JIRADatabaseStatus user password driverclass jdbc-url driver-classname
