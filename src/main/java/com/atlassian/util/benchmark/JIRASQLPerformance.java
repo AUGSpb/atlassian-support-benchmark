@@ -44,7 +44,7 @@ public class JIRASQLPerformance {
                 String jiraInstallDir = args[1];
                 JiraDatabaseConfig dbConfig = JiraDatabaseConfig.autoConfigDB(jiraHome, jiraInstallDir);
                 connectionFactory = new ConnectionFactory(dbConfig);
-                noOfRuns = (args.length == 3) ? Integer.valueOf(args[2]) : DEFAULT_NUMBER_OF_RUNS;
+                noOfRuns = (args.length == 3) ? Integer.parseInt(args[2]) : DEFAULT_NUMBER_OF_RUNS;
             } else {
                 final String username = args[0];
                 final String password = args[1];
@@ -54,7 +54,7 @@ public class JIRASQLPerformance {
 
                 // connectionFactory = new ConnectionFactory("jirauser", "jirauser",
                 // "jdbc:jtds:sqlserver://192.168.0.89:1433/jed", "net.sourceforge.jtds.jdbc.Driver");
-                noOfRuns = (args.length == 5) ? Integer.valueOf(args[4]) : DEFAULT_NUMBER_OF_RUNS;
+                noOfRuns = (args.length == 5) ? Integer.parseInt(args[4]) : DEFAULT_NUMBER_OF_RUNS;
             }
             (new JIRASQLPerformance(connectionFactory, noOfRuns)).call();
         } catch (IOException e) {
@@ -168,7 +168,7 @@ public class JIRASQLPerformance {
         result.add(new TimedTestRunner(RETRIEVE_WORKFLOW, () -> {
             final String workflowID = issue.get(COLUMN_ISSUE_WORKFLOW_ID);
             if (workflowID != null) {
-                selectWorkFlow.setLong(1, Long.valueOf(workflowID));
+                selectWorkFlow.setLong(1, Long.parseLong(workflowID));
                 wfResultSet.set(selectWorkFlow.executeQuery());
             }
             return null;
@@ -195,7 +195,7 @@ public class JIRASQLPerformance {
                 System.err.println("Please, check consistency of custom field value table in DB");
                 return null;
             }
-            selectCustomFieldValues.setLong(1, Long.valueOf(issueID));
+            selectCustomFieldValues.setLong(1, Long.parseLong(issueID));
             ResultSet rs = selectCustomFieldValues.executeQuery();
             if (rs == null) {
                 return null;
@@ -229,7 +229,7 @@ public class JIRASQLPerformance {
                 return null;
             }
 
-            selectComment.setLong(1, Long.valueOf(issueID));
+            selectComment.setLong(1, Long.parseLong(issueID));
             ResultSet rs = selectComment.executeQuery();
             if (rs == null) {
                 return null;
@@ -261,7 +261,7 @@ public class JIRASQLPerformance {
                 System.err.println("Please, check consistency of custom field value table in DB");
                 return null;
             }
-            selectWorklog.setLong(1, Long.valueOf(issueID));
+            selectWorklog.setLong(1, Long.parseLong(issueID));
             ResultSet rs = selectWorklog.executeQuery();
             if (rs == null) {
                 return null;

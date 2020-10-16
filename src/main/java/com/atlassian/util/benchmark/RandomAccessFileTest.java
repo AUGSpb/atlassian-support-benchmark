@@ -12,7 +12,7 @@ public class RandomAccessFileTest implements Callable<Object> {
     public static void main(String[] args) throws Exception {
         int runs;
         try {
-            runs = (args.length == 0) ? 1000 : Integer.valueOf(args[0]);
+            runs = (args.length == 0) ? 1000 : Integer.parseInt(args[0]);
         } catch (RuntimeException e) {
             System.err.println("Usage: java " + RandomAccessFileTest.class + " [noOfTestRuns]");
             throw e;
